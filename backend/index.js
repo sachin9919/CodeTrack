@@ -21,7 +21,7 @@ yargs(hideBin(process.argv))
             });
         },
         (argv) => {
-            addRepo(argv.file);
+            addRepo(argv.file); // yah pe argument ke tor per hum user se add karne wali file ka path le rahe hain
         }
     )
     .command(
