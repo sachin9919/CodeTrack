@@ -1,8 +1,8 @@
-const fs = require("fs").promises; // ye isliye likha hai ki folder bante time jab init se banega to id wagerah sahi se jaye
+const fs = require("fs").promises;
 const path = require("path");
 
 async function initRepo() {
-  const repoPath = path.resolve(process.cwd(), ".myGit");
+  const repoPath = path.resolve(process.cwd(), ".apnaGit");
   const commitsPath = path.join(repoPath, "commits");
 
   try {
