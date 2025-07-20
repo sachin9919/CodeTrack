@@ -13,3 +13,4 @@ config.json
 
 # Optional: VSCode settings
 .vscode/
+.env
