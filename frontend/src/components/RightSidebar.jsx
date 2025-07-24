@@ -4,7 +4,13 @@ import "./rightSidebar.css";
 const RightSidebar = ({ isOpen, toggleRightSidebar }) => {
     return (
         <div className={`right-sidebar ${isOpen ? "open" : ""}`}>
-            <button className="close-btn" onClick={toggleRightSidebar}>×</button>
+            <button
+                className="close-btn"
+                onClick={toggleRightSidebar}
+                aria-label="Close Right Sidebar"
+            >
+                ×
+            </button>
             <h3>GitHub Menu</h3>
             <ul>
                 <li><a href="#">Dashboard</a></li>

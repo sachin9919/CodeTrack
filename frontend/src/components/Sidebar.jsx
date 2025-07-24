@@ -4,7 +4,13 @@ import "./sidebar.css";
 const Sidebar = ({ isOpen, toggleSidebar }) => {
     return (
         <div className={`sidebar ${isOpen ? "open" : ""}`}>
-            <button className="close-btn" onClick={toggleSidebar}>×</button>
+            <button
+                className="close-btn"
+                onClick={toggleSidebar}
+                aria-label="Close Sidebar"
+            >
+                ×
+            </button>
             <div className="sidebar-user">
                 <p>Test User</p>
             </div>
