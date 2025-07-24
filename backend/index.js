@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const http = require("http");
 const { Server } = require("socket.io");
-//const mainRouter = require("./routes/main.router");
+const mainRouter = require("./routes/main.router");
 
 const yargs = require("yargs");
 const { hideBin } = require("yargs/helpers");
@@ -105,7 +105,7 @@ function startServer() {
 
   const db = mongoose.connection;
 
-  db.once("open", async () => {  // means ekbar select karke jitne operation karne hai 
+  db.once("open", async () => {
     console.log("CRUD operations called");
     // CRUD operations
   });

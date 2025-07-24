@@ -1,0 +1,34 @@
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    background-color: #0d1117;
+    color: white;
+    border-bottom: 1px solid #30363d;
+    margin-top: 12px;
+    /* Adds breathing space below top of page */
+}
+
+nav>a>div {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+nav img {
+    height: 32px;
+    margin-top: 4px;
+    /* Optional: minor vertical push */
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin-left: 16px;
+}
+
+nav div:last-child {
+    display: flex;
+    gap: 20px;
+}

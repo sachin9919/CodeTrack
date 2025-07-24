@@ -1,0 +1,50 @@
+.right-sidebar {
+    width: 250px;
+    height: 100vh;
+    background-color: #161b22;
+    color: white;
+    position: fixed;
+    top: 0;
+    right: -260px;
+    transition: right 0.3s ease;
+    padding: 20px;
+    z-index: 1000;
+}
+
+.right-sidebar.open {
+    right: 0;
+}
+
+.right-sidebar .close-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: none;
+    color: white;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+}
+
+.right-sidebar h3 {
+    margin-bottom: 20px;
+}
+
+.right-sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+
+.right-sidebar ul li {
+    margin: 10px 0;
+}
+
+.right-sidebar ul li a {
+    text-decoration: none;
+    color: white;
+    transition: color 0.3s;
+}
+
+.right-sidebar ul li a:hover {
+    color: #58a6ff;
+}

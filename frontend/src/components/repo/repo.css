@@ -1,0 +1,88 @@
+.repo-form-wrapper {
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+    background-color: #161b22;
+    border-radius: 8px;
+    color: white;
+}
+
+.repo-form-wrapper input,
+.repo-form-wrapper textarea {
+    width: 100%;
+    margin: 10px 0 20px 0;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: none;
+    background-color: #0d1117;
+    color: white;
+    outline: 1px solid #30363d;
+}
+
+.repo-form-wrapper textarea {
+    resize: vertical;
+}
+
+.repo-details-page {
+    padding: 20px;
+    color: white;
+}
+
+.repo-header {
+    margin-bottom: 20px;
+}
+
+.repo-meta p {
+    margin: 8px 0;
+}
+
+.repo-actions button {
+    margin-right: 10px;
+    background-color: #238636;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.repo-actions button:hover {
+    background-color: #2ea043;
+}
+
+/* New shared layout style for Commit, Push, Pull, Issues */
+.repo-action-page {
+    padding: 20px;
+    color: white;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.repo-action-page h2 {
+    margin-bottom: 20px;
+}
+
+.repo-action-page textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    background-color: #0d1117;
+    color: white;
+    border: none;
+    outline: 1px solid #30363d;
+    resize: vertical;
+    margin-bottom: 10px;
+}
+
+.repo-action-page button {
+    background-color: #238636;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.repo-action-page button:hover {
+    background-color: #2ea043;
+}

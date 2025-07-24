@@ -3,7 +3,7 @@ const path = require("path");
 const { v4: uuidv4 } = require("uuid");
 
 async function commitRepo(message) {
-  const repoPath = path.resolve(process.cwd(), ".apnaGit");
+  const repoPath = path.resolve(process.cwd(), ".myGit");
   const stagedPath = path.join(repoPath, "staging"); // system ko bata reahe hain is folder se cheeze copy karni hain dusre folder mein
   const commitPath = path.join(repoPath, "commits");
 

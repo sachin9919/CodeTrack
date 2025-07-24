@@ -46,11 +46,11 @@ async function signup(req, res) {
     const result = await usersCollection.insertOne(newUser);
 
     const token = jwt.sign(
-      { id: result.insertId },
+      { id: result.insertedId },
       process.env.JWT_SECRET_KEY,
       { expiresIn: "1h" }
     );
-    res.json({ token, userId: result.insertId });
+    res.json({ token, userId: result.insertedId });
   } catch (err) {
     console.error("Error during signup : ", err.message);
     res.status(500).send("Server error");
@@ -61,7 +61,7 @@ async function login(req, res) {
   const { email, password } = req.body;
   try {
     await connectClient();
-    const db = client.db("githubclone");
+    const db = client.db("gitcluster");
     const usersCollection = db.collection("users");
 
     const user = await usersCollection.findOne({ email });
@@ -90,7 +90,7 @@ async function getAllUsers(req, res) {
     const db = client.db("gitcluster");
     const usersCollection = db.collection("users");
 
-    const users = await usersCollection.find({}).toArray();  // .toarray isliye use kiya hai kyunki bina iske mongo json mein convert  nahi kar pa rha hai
+    const users = await usersCollection.find({}).toArray();
     res.json(users);
   } catch (err) {
     console.error("Error during fetching : ", err.message);
@@ -178,7 +178,7 @@ async function deleteUserProfile(req, res) {
   }
 }
 
-module.exports = { // jab import export karte hain tab to individually export import kar sakte hai par export aur require karte hain to aise ek sath export karna padta  hai
+module.exports = {
   getAllUsers,
   signup,
   login,
