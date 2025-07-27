@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import "./dashboard.css";
-import Navbar from "../Navbar";
 
 const Dashboard = () => {
   const [repositories, setRepositories] = useState([]);
@@ -47,47 +46,44 @@ const Dashboard = () => {
   }, [searchQuery, repositories]);
 
   return (
-    <>
-      <Navbar />
-      <section id="dashboard">
-        <aside className="left-panel">
-          <h3>Suggested Repositories</h3>
-          {suggestedRepositories.map((repo) => (
-            <div key={repo._id} className="repo-card">
-              <h4>{repo.name}</h4>
-              <p>{repo.description}</p>
-            </div>
-          ))}
-        </aside>
-
-        <main className="main-content">
-          <h2>Your Repositories</h2>
-          <div id="search">
-            <input
-              type="text"
-              value={searchQuery}
-              placeholder="Search..."
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+    <section id="dashboard">
+      <aside className="left-panel">
+        <h3>Suggested Repositories</h3>
+        {suggestedRepositories.map((repo) => (
+          <div key={repo._id} className="repo-card">
+            <h4>{repo.name}</h4>
+            <p>{repo.description}</p>
           </div>
-          {searchResults.map((repo) => (
-            <div key={repo._id} className="repo-card">
-              <h4>{repo.name}</h4>
-              <p>{repo.description}</p>
-            </div>
-          ))}
-        </main>
+        ))}
+      </aside>
 
-        <aside className="right-panel">
-          <h3>Upcoming Events</h3>
-          <ul>
-            <li>Tech Conference - Dec 15</li>
-            <li>Developer Meetup - Dec 25</li>
-            <li>React Summit - Jan 5</li>
-          </ul>
-        </aside>
-      </section>
-    </>
+      <main className="main-content">
+        <h2>Your Repositories</h2>
+        <div id="search">
+          <input
+            type="text"
+            value={searchQuery}
+            placeholder="Search..."
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        {searchResults.map((repo) => (
+          <div key={repo._id} className="repo-card">
+            <h4>{repo.name}</h4>
+            <p>{repo.description}</p>
+          </div>
+        ))}
+      </main>
+
+      <aside className="right-panel">
+        <h3>Upcoming Events</h3>
+        <ul>
+          <li>Tech Conference - Dec 15</li>
+          <li>Developer Meetup - Dec 25</li>
+          <li>React Summit - Jan 5</li>
+        </ul>
+      </aside>
+    </section>
   );
 };
 

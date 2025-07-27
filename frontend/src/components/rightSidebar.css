@@ -8,7 +8,7 @@
     right: -260px;
     transition: right 0.3s ease;
     padding: 20px;
-    z-index: 1000;
+    z-index: 1001;
 }
 
 .right-sidebar.open {
@@ -24,6 +24,12 @@
     border: none;
     font-size: 22px;
     cursor: pointer;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.right-sidebar .close-btn:hover {
+    transform: rotate(90deg);
+    opacity: 0.8;
 }
 
 .right-sidebar h3 {
@@ -45,6 +51,15 @@
     transition: color 0.3s;
 }
 
-.right-sidebar ul li a:hover {
+.right-sidebar ul li a:hover,
+.right-sidebar ul li a.active {
     color: #58a6ff;
+    font-weight: bold;
+}
+
+.right-sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
 }

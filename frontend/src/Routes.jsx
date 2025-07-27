@@ -1,13 +1,10 @@
-import React, { useEffect } from "react";
-import { useNavigate, useRoutes } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useRoutes, useNavigate } from "react-router-dom";
 
-// Pages
 import Dashboard from "./components/dashboard/Dashboard";
 import Profile from "./components/user/Profile";
 import Login from "./components/auth/Login";
 import Signup from "./components/auth/Signup";
-
-// Repo-related pages
 import CreateRepo from "./components/repo/CreateRepo";
 import RepoDetails from "./components/repo/RepoDetails";
 import Commit from "./components/repo/Commit";
@@ -15,12 +12,14 @@ import Push from "./components/repo/Push";
 import Pull from "./components/repo/Pull";
 import Issues from "./components/repo/Issues";
 
-// Auth Context
 import { useAuth } from "./authContext";
+import MainLayout from "./components/layout/MainLayout";
 
 const ProjectRoutes = () => {
     const { currentUser, setCurrentUser } = useAuth();
     const navigate = useNavigate();
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
 
     useEffect(() => {
         const userIdFromStorage = localStorage.getItem("userId");
@@ -38,20 +37,32 @@ const ProjectRoutes = () => {
         }
     }, [currentUser, navigate, setCurrentUser]);
 
-    const element = useRoutes([
-        { path: "/", element: <Dashboard /> },
+    const routes = useRoutes([
+        {
+            element: (
+                <MainLayout
+                    isSidebarOpen={sidebarOpen}
+                    toggleSidebar={() => setSidebarOpen((prev) => !prev)}
+                    isRightSidebarOpen={rightSidebarOpen}
+                    toggleRightSidebar={() => setRightSidebarOpen((prev) => !prev)}
+                />
+            ),
+            children: [
+                { path: "/", element: <Dashboard /> },
+                { path: "/profile", element: <Profile /> },
+                { path: "/createRepo", element: <CreateRepo /> },
+                { path: "/repo/:id", element: <RepoDetails /> },
+                { path: "/repo/:id/commit", element: <Commit /> },
+                { path: "/repo/:id/push", element: <Push /> },
+                { path: "/repo/:id/pull", element: <Pull /> },
+                { path: "/repo/:id/issues", element: <Issues /> },
+            ],
+        },
         { path: "/auth", element: <Login /> },
         { path: "/signup", element: <Signup /> },
-        { path: "/profile", element: <Profile /> },
-        { path: "/createRepo", element: <CreateRepo /> },
-        { path: "/repo/:id", element: <RepoDetails /> },
-        { path: "/repo/:id/commit", element: <Commit /> },
-        { path: "/repo/:id/push", element: <Push /> },
-        { path: "/repo/:id/pull", element: <Pull /> },
-        { path: "/repo/:id/issues", element: <Issues /> },
     ]);
 
-    return element;
+    return routes;
 };
 
 export default ProjectRoutes;

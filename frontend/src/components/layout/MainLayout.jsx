@@ -1,11 +1,17 @@
 import React from "react";
+import { Outlet } from "react-router-dom";
 import Navbar from "../Navbar";
 import Sidebar from "../Sidebar";
 import RightSidebar from "../RightSidebar";
 
-const MainLayout = ({ children, isSidebarOpen, toggleSidebar, isRightSidebarOpen, toggleRightSidebar }) => {
+const MainLayout = ({
+    isSidebarOpen,
+    toggleSidebar,
+    isRightSidebarOpen,
+    toggleRightSidebar,
+}) => {
     return (
-        <div style={{ position: "relative" }}>
+        <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", position: "relative" }}>
             <Navbar
                 isSidebarOpen={isSidebarOpen}
                 toggleSidebar={toggleSidebar}
@@ -15,8 +21,8 @@ const MainLayout = ({ children, isSidebarOpen, toggleSidebar, isRightSidebarOpen
             <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
             <RightSidebar isOpen={isRightSidebarOpen} toggleRightSidebar={toggleRightSidebar} />
 
-            <div className="main-content" style={{ paddingTop: "60px" }}>
-                {children}
+            <div className="main-content">
+                <Outlet />
             </div>
         </div>
     );
