@@ -7,7 +7,6 @@ nav {
     color: white;
     border-bottom: 1px solid #30363d;
     margin-top: 12px;
-    /* Adds breathing space below top of page */
 }
 
 nav>a>div {
@@ -19,7 +18,6 @@ nav>a>div {
 nav img {
     height: 32px;
     margin-top: 4px;
-    /* Optional: minor vertical push */
 }
 
 nav a {
@@ -28,7 +26,24 @@ nav a {
     margin-left: 16px;
 }
 
-nav div:last-child {
+.navbar-right {
     display: flex;
     gap: 20px;
+    align-items: center;
+}
+
+/* + icon styling */
+.plus-icon {
+    background-color: #30363d;
+    color: white;
+    border: none;
+    font-size: 20px;
+    padding: 6px 12px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.plus-icon:hover {
+    background-color: #484f58;
 }

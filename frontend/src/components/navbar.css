@@ -77,13 +77,6 @@
     cursor: pointer;
 }
 
-/* Plus Icon Dropdown */
-.nav-icon-dropdown {
-    position: relative;
-    cursor: pointer;
-}
-
-/* Dropdown Menu */
 .dropdown {
     display: none;
     position: absolute;
@@ -97,8 +90,7 @@
     z-index: 100;
 }
 
-.nav-avatar-dropdown:hover .dropdown,
-.nav-icon-dropdown:hover .dropdown {
+.nav-avatar-dropdown:hover .dropdown {
     display: block;
 }
 
@@ -114,4 +106,9 @@
 .dropdown a:hover {
     background-color: #30363d;
     border-radius: 4px;
+}
+
+/* Remove old .nav-icon-dropdown (no longer used) */
+.nav-icon-dropdown {
+    display: none;
 }

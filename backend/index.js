@@ -55,7 +55,7 @@ yargs(hideBin(process.argv))
     "Revert to a specific commit",
     (yargs) => {
       yargs.positional("commitID", {
-        describe: "Comit ID to revert to",
+        describe: "Commit ID to revert to",
         type: "string",
       });
     },
@@ -69,19 +69,27 @@ yargs(hideBin(process.argv))
 function startServer() {
   const app = express();
   const port = process.env.PORT || 3000;
+  // Middleware
+  app.use(cors({
+    origin: ["http://localhost:5173", "http://localhost:3000"],
+    credentials: true
+  }));
 
   app.use(bodyParser.json());
   app.use(express.json());
 
   const mongoURI = process.env.MONGODB_URI;
 
+  // ✅ Corrected connection with required options for Atlas
   mongoose
-    .connect(mongoURI)
+    .connect(mongoURI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    })
     .then(() => console.log("MongoDB connected!"))
     .catch((err) => console.error("Unable to connect : ", err));
 
   app.use(cors({ origin: "*" }));
-
   app.use("/", mainRouter);
 
   let user = "test";

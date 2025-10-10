@@ -17,11 +17,11 @@ async function createRepository(req, res) {
 
     const newRepository = new Repository({
       name,
-      description,
-      visibility,
+      description: description || "",
+      visibility: visibility !== undefined ? visibility : true,
       owner,
-      content,
-      issues,
+      content: content || [],
+      issues: issues || [],
     });
 
     const result = await newRepository.save();
@@ -39,7 +39,7 @@ async function createRepository(req, res) {
 async function getAllRepositories(req, res) {
   try {
     const repositories = await Repository.find({})
-      .populate("owner")          // with help of populate we are able to all details related to owner if we not do that we only get owner id not details related to it
+      .populate("owner")
       .populate("issues");
 
     res.json(repositories);
@@ -52,9 +52,13 @@ async function getAllRepositories(req, res) {
 async function fetchRepositoryById(req, res) {
   const { id } = req.params;
   try {
-    const repository = await Repository.find({ _id: id })
+    const repository = await Repository.findById(id)
       .populate("owner")
       .populate("issues");
+
+    if (!repository) {
+      return res.status(404).json({ error: "Repository not found!" });
+    }
 
     res.json(repository);
   } catch (err) {
@@ -84,11 +88,13 @@ async function fetchRepositoriesForCurrentUser(req, res) {
   try {
     const repositories = await Repository.find({ owner: userID });
 
-    if (!repositories || repositories.length == 0) {
-      return res.status(404).json({ error: "User Repositories not found!" });
+    // FIX: Return 200 OK with an empty array if no repos are found
+    if (!repositories || repositories.length === 0) {
+      return res.status(200).json({ message: "No repositories found for user.", repositories: [] });
     }
+
     console.log(repositories);
-    res.json({ message: "Repositories found!", repositories });
+    res.status(200).json({ message: "Repositories found!", repositories });
   } catch (err) {
     console.error("Error during fetching user repositories : ", err.message);
     res.status(500).send("Server error");

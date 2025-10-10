@@ -1,28 +1,70 @@
 .repo-form-wrapper {
-    padding: 20px;
-    max-width: 600px;
-    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+.repo-form {
     background-color: #161b22;
+    padding: 30px;
     border-radius: 8px;
     color: white;
+    width: 100%;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 
-.repo-form-wrapper input,
-.repo-form-wrapper textarea {
+.repo-form h2 {
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+.repo-form label {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.repo-form input[type="text"],
+.repo-form textarea {
     width: 100%;
-    margin: 10px 0 20px 0;
-    padding: 8px 12px;
+    padding: 10px;
+    font-size: 14px;
     border-radius: 6px;
     border: none;
+    outline: 1px solid #30363d;
     background-color: #0d1117;
     color: white;
-    outline: 1px solid #30363d;
 }
 
-.repo-form-wrapper textarea {
+.repo-form textarea {
     resize: vertical;
+    min-height: 80px;
 }
 
+.checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.repo-form button {
+    margin-top: 10px;
+    padding: 10px 15px;
+    background-color: #238636;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.repo-form button:hover {
+    background-color: #2ea043;
+}
+
+/* Existing Repo Details styles (unchanged) */
 .repo-details-page {
     padding: 20px;
     color: white;
@@ -50,7 +92,7 @@
     background-color: #2ea043;
 }
 
-/* New shared layout style for Commit, Push, Pull, Issues */
+/* Shared layout for commit/push/pull/issues */
 .repo-action-page {
     padding: 20px;
     color: white;

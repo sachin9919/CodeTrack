@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import Navbar from "../Navbar";
 import "./repo.css";
 
 const Commit = () => {
@@ -15,7 +14,7 @@ const Commit = () => {
         }
 
         try {
-            const response = await fetch("http://localhost:3002/commit", {
+            const response = await fetch("http://localhost:3000/commit", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -39,7 +38,6 @@ const Commit = () => {
 
     return (
         <>
-            <Navbar />
             <div className="repo-action-page">
                 <h2>Commit Changes</h2>
                 <textarea

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import Navbar from "../Navbar";
 import "./repo.css";
 
 const Issues = () => {
@@ -12,7 +11,7 @@ const Issues = () => {
     useEffect(() => {
         const fetchIssues = async () => {
             try {
-                const response = await fetch(`http://localhost:3002/issue/${id}`);
+                const response = await fetch(`http://localhost:3000/issue/${id}`);
                 const data = await response.json();
                 setIssues(data);
             } catch (err) {
@@ -29,7 +28,7 @@ const Issues = () => {
 
         setLoading(true);
         try {
-            const response = await fetch("http://localhost:3002/issue/create", {
+            const response = await fetch("http://localhost:3000/issue/create", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ repoId: id, content: newIssue }),
@@ -51,7 +50,7 @@ const Issues = () => {
 
     return (
         <>
-            <Navbar />
+           
             <div className="repo-action-page">
                 <h2>Issues for This Repository</h2>
 

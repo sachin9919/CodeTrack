@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
-import Navbar from "../Navbar";
 import "./repo.css";
 
 const Pull = () => {
@@ -11,7 +10,7 @@ const Pull = () => {
     const handlePull = async () => {
         setIsPulling(true);
         try {
-            const response = await fetch("http://localhost:3002/pull", {
+            const response = await fetch("http://localhost:3000/pull", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -35,7 +34,6 @@ const Pull = () => {
 
     return (
         <>
-            <Navbar />
             <div className="repo-action-page">
                 <h2>Pull Latest Changes</h2>
                 <button onClick={handlePull} disabled={isPulling}>

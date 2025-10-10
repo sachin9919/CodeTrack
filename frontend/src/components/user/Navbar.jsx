@@ -1,8 +1,14 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./navbar.css";
 
 const Navbar = () => {
+  const navigate = useNavigate();
+
+  const handleNewRepoClick = () => {
+    navigate("/createRepo");
+  };
+
   return (
     <nav className="navbar">
       <Link to="/" className="navbar-left">
@@ -14,10 +20,16 @@ const Navbar = () => {
           <h3>GitHub</h3>
         </div>
       </Link>
+
       <div className="navbar-right">
-        <Link to="/create">
-          <p>Create a Repository</p>
-        </Link>
+        <button
+          className="plus-icon"
+          title="Click to create new repo"
+          onClick={handleNewRepoClick}
+        >
+          +
+        </button>
+
         <Link to="/profile">
           <p>Profile</p>
         </Link>

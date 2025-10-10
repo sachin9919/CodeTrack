@@ -1,9 +1,15 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./navbar.css";
 import { FaBell, FaPlus, FaGithub, FaBars } from "react-icons/fa";
 
 const Navbar = ({ toggleSidebar, toggleRightSidebar }) => {
+  const navigate = useNavigate();
+
+  const handleCreateRepo = () => {
+    navigate("/createRepo");
+  };
+
   return (
     <nav className="navbar">
       {/* Left Section */}
@@ -23,12 +29,12 @@ const Navbar = ({ toggleSidebar, toggleRightSidebar }) => {
       <div className="nav-right">
         <FaBell className="nav-icon" title="Notifications" />
 
-        <div className="nav-icon-dropdown">
-          <FaPlus title="Create new..." />
-          <div className="dropdown">
-            <Link to="/createRepo">New Repository</Link>
-          </div>
-        </div>
+        {/* Direct click + icon (no dropdown) */}
+        <FaPlus
+          className="nav-icon"
+          title="Click to create new repository"
+          onClick={handleCreateRepo}
+        />
 
         <div className="nav-avatar-dropdown">
           <img

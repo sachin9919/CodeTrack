@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import Navbar from "../Navbar";
 import "./repo.css";
 
 const Push = () => {
@@ -12,7 +11,7 @@ const Push = () => {
     const handlePush = async () => {
         setIsPushing(true);
         try {
-            const response = await fetch("http://localhost:3002/push", {
+            const response = await fetch("http://localhost:3000/push", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -36,7 +35,7 @@ const Push = () => {
 
     return (
         <>
-            <Navbar />
+            
             <div className="repo-action-page">
                 <h2>Push Changes</h2>
                 <button onClick={handlePush} disabled={isPushing}>

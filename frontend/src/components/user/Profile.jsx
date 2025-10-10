@@ -34,7 +34,7 @@ const Profile = () => {
 
   return (
     <>
-      <Navbar />
+      
       <UnderlineNav aria-label="Repository">
         <UnderlineNav.Item
           aria-current="page"
