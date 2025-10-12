@@ -7,21 +7,31 @@ const Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestedRepositories, setSuggestedRepositories] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
+  const [isLoading, setIsLoading] = useState(true); // Added loading state
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
     const userId = localStorage.getItem("userId");
 
+    // Check for user ID first
+    if (!userId) {
+      setIsLoading(false);
+      setRepositories([]);
+      return;
+    }
+
     const fetchRepositories = async () => {
+      setIsLoading(true); // Start loading before fetch
       try {
-        // Using port 3000 as inferred from CreateRepo.jsx
         const response = await fetch(`http://localhost:3000/repo/user/${userId}`);
         const data = await response.json();
         setRepositories(data.repositories || []);
       } catch (err) {
         console.error("Error while fetching repositories:", err);
         setRepositories([]);
+      } finally {
+        setIsLoading(false); // Stop loading regardless of success/failure
       }
     };
 
@@ -36,12 +46,9 @@ const Dashboard = () => {
       }
     };
 
-    // Only run if userId exists
-    if (userId) {
-      fetchRepositories();
-    }
+    fetchRepositories();
     fetchSuggestedRepositories();
-  }, [location.pathname]); // CRITICAL FIX: Re-run effect when the route path changes
+  }, [location.pathname]); // Re-fetch logic
 
   useEffect(() => {
     if (searchQuery === "") {
@@ -53,6 +60,24 @@ const Dashboard = () => {
       setSearchResults(filteredRepo);
     }
   }, [searchQuery, repositories]);
+
+  const currentUserId = localStorage.getItem("userId");
+
+  // FIX: Explicitly render a message if the user is not authenticated
+  if (!currentUserId) {
+    return (
+      <div style={{ color: 'white', padding: '50px', textAlign: 'center' }}>
+        <h2>You are not logged in.</h2>
+        <p>Please log in to view and manage your repositories.</p>
+      </div>
+    );
+  }
+
+  // Render loading state while data is being fetched
+  if (isLoading) {
+    return <div style={{ color: 'white', padding: '50px', textAlign: 'center' }}>Loading repositories...</div>;
+  }
+
 
   return (
     <section id="dashboard">

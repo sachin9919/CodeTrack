@@ -3,6 +3,9 @@ const Repository = require("../models/repoModel");
 const User = require("../models/userModel");
 const Issue = require("../models/issueModel");
 
+// NOTE: S3 dependencies (aws-config, s3, uploadContentToS3) are not needed here
+// because commit metadata is being stored directly in MongoDB.
+
 async function createRepository(req, res) {
   const { owner, name, issues, content, description, visibility } = req.body;
 
@@ -35,6 +38,48 @@ async function createRepository(req, res) {
     res.status(500).send("Server error");
   }
 }
+
+
+// FIX: Commit function now pushes object directly, matching the new schema
+async function commitToRepository(req, res) {
+  const { id } = req.params;
+  const { message, userId } = req.body;
+
+  try {
+    if (!message) {
+      return res.status(400).json({ error: "Commit message is required." });
+    }
+
+    const repository = await Repository.findById(id);
+    if (!repository) {
+      return res.status(404).json({ error: "Repository not found!" });
+    }
+
+    // STEP 1: Create the new commit object 
+    const newCommit = {
+      message: message,
+      author: userId, // Mongoose will cast this string to ObjectId based on the schema
+      timestamp: new Date(),
+    };
+
+    // STEP 2: Push the valid object directly into the content array
+    repository.content.push(newCommit);
+
+    const updatedRepository = await repository.save();
+
+    res.status(200).json({
+      message: "Commit successful!",
+      commit: newCommit,
+      repository: updatedRepository,
+    });
+
+  } catch (err) {
+    // General error handling
+    console.error("Error during commit : ", err.message);
+    res.status(500).json({ error: "Server error during commit." });
+  }
+}
+
 
 async function getAllRepositories(req, res) {
   try {
@@ -82,18 +127,15 @@ async function fetchRepositoryByName(req, res) {
 }
 
 async function fetchRepositoriesForCurrentUser(req, res) {
-  console.log(req.params);
   const { userID } = req.params;
 
   try {
     const repositories = await Repository.find({ owner: userID });
 
-    // FIX: Return 200 OK with an empty array if no repos are found
     if (!repositories || repositories.length === 0) {
       return res.status(200).json({ message: "No repositories found for user.", repositories: [] });
     }
 
-    console.log(repositories);
     res.status(200).json({ message: "Repositories found!", repositories });
   } catch (err) {
     console.error("Error during fetching user repositories : ", err.message);
@@ -167,6 +209,7 @@ async function deleteRepositoryById(req, res) {
 module.exports = {
   createRepository,
   getAllRepositories,
+  commitToRepository,
   fetchRepositoryById,
   fetchRepositoryByName,
   fetchRepositoriesForCurrentUser,

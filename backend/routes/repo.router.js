@@ -12,4 +12,7 @@ repoRouter.put("/update/:id", repoController.updateRepositoryById);
 repoRouter.delete("/delete/:id", repoController.deleteRepositoryById);
 repoRouter.patch("/toggle/:id", repoController.toggleVisibilityById);
 
+// NEW ROUTE: Commit to a specific repository
+repoRouter.post("/:id/commit", repoController.commitToRepository);
+
 module.exports = repoRouter;
