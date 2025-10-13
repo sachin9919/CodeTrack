@@ -10,6 +10,9 @@ const mainRouter = require("./routes/main.router");
 const yargs = require("yargs");
 const { hideBin } = require("yargs/helpers");
 
+// FIX: Import fetch functionality for CLI HTTP requests
+const fetch = require('node-fetch');
+
 const { initRepo } = require("./controllers/init");
 const { addRepo } = require("./controllers/add");
 const { commitRepo } = require("./controllers/commit");

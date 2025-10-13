@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./repo.css";
 
+const CLI_API_URL = "http://localhost:3000/cli/config";
+
 const CreateRepo = () => {
     const [repoData, setRepoData] = useState({
         name: "",
@@ -31,11 +33,10 @@ const CreateRepo = () => {
         }
 
         try {
+            // 1. Create Repository via Web API (Saves to MongoDB)
             const response = await fetch("http://localhost:3000/repo/create", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     name: repoData.name,
                     description: repoData.description,
@@ -52,8 +53,25 @@ const CreateRepo = () => {
                 throw new Error(data.error || 'Failed to create repository');
             }
 
-            console.log("Repository created:", data);
-            navigate(`/repo/${data.repositoryID}`);
+            const newRepoId = data.repositoryID;
+
+            // 2. PERMANENT FIX: Update local config.json via the new API endpoint
+            const configUpdateResponse = await fetch(`${CLI_API_URL}/set-repoid`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ repoId: newRepoId })
+            });
+
+            if (!configUpdateResponse.ok) {
+                // IMPORTANT: If this fails, the CLI will not work! Warn the user.
+                console.warn(`WARNING: Failed to automatically set repoId in local config. HTTP Status: ${configUpdateResponse.status}. You must set it manually in .myGit/config.json.`);
+            } else {
+                console.log(`Successfully wrote repoId ${newRepoId} to local config.json.`);
+            }
+
+            // 3. Navigate to the new repository page
+            navigate(`/repo/${newRepoId}`);
+
         } catch (error) {
             console.error("Repo creation error:", error);
             setError(error.message);
