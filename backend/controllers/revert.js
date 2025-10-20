@@ -1,26 +1,51 @@
-const fs = require("fs");
+const fs = require("fs").promises; // Use modern asynchronous fs.promises
 const path = require("path");
-const { promisify } = require("util");
-
-const readdir = promisify(fs.readdir);
-const copyFile = promisify(fs.copyFile);
 
 async function revertRepo(commitID) {
-  const repoPath = path.resolve(process.cwd(), ".myGit");
-  const commitsPath = path.join(repoPath, "commits");
+  // Base path is where the command is executed (e.g., C:\...\backend)
+  const currentDir = process.cwd();
+  const commitsPath = path.join(currentDir, ".myGit", "commits");
+
+  // Path to the target commit directory
+  const commitDir = path.join(commitsPath, commitID);
+
+  // Path to the project root (where the working files live, one level up)
+  const parentDir = path.resolve(currentDir, "..");
 
   try {
-    const commitDir = path.join(commitsPath, commitID);
-    const files = await readdir(commitDir);
-    const parentDir = path.resolve(repoPath, "..");
+    // 1. Check if the commit directory exists
+    await fs.access(commitDir);
 
+    // 2. Read all files within the commit directory
+    const files = await fs.readdir(commitDir);
+
+    console.log(`Reverting to commit: ${commitID}`);
+
+    let filesReverted = 0;
+
+    // 3. Copy each file from the commit directory to the working directory
     for (const file of files) {
-      await copyFile(path.join(commitDir, file), path.join(parentDir, file));
+      // Skip control files like commit.json or Readme.md in commit history
+      if (file.endsWith('.json') || file.endsWith('.md')) continue;
+
+      const sourcePath = path.join(commitDir, file);
+      const destinationPath = path.join(parentDir, file);
+
+      // Perform the copy operation
+      await fs.copyFile(sourcePath, destinationPath);
+      filesReverted++;
     }
 
-    console.log(`Commit ${commitID} reverted successfully!`);
+    console.log(`\nCommit ${commitID} reverted successfully!`);
+    console.log(`Total files restored to project root: ${filesReverted}`);
+
   } catch (err) {
-    console.error("Unable to revert : ", err);
+    if (err.code === 'ENOENT') {
+      console.error(`❌ Error: Commit directory not found at ${commitDir}`);
+      console.error("Action: Please verify the Commit ID exists in your .myGit/commits folder.");
+    } else {
+      console.error("❌ Unable to revert : ", err.message);
+    }
   }
 }
 

@@ -7,14 +7,13 @@ const Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestedRepositories, setSuggestedRepositories] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
-  const [isLoading, setIsLoading] = useState(true); // Added loading state
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
     const userId = localStorage.getItem("userId");
 
-    // Check for user ID first
     if (!userId) {
       setIsLoading(false);
       setRepositories([]);
@@ -22,22 +21,24 @@ const Dashboard = () => {
     }
 
     const fetchRepositories = async () => {
-      setIsLoading(true); // Start loading before fetch
+      setIsLoading(true);
       try {
-        const response = await fetch(`http://localhost:3000/repo/user/${userId}`);
+        // FIX 1: Added the correct '/api' prefix to the URL.
+        const response = await fetch(`http://localhost:3000/api/repo/user/${userId}`);
         const data = await response.json();
         setRepositories(data.repositories || []);
       } catch (err) {
         console.error("Error while fetching repositories:", err);
         setRepositories([]);
       } finally {
-        setIsLoading(false); // Stop loading regardless of success/failure
+        setIsLoading(false);
       }
     };
 
     const fetchSuggestedRepositories = async () => {
       try {
-        const response = await fetch("http://localhost:3000/repo/all");
+        // FIX 2: Added the correct '/api' prefix to the URL.
+        const response = await fetch("http://localhost:3000/api/repo/all");
         const data = await response.json();
         setSuggestedRepositories(data || []);
       } catch (err) {
@@ -48,7 +49,7 @@ const Dashboard = () => {
 
     fetchRepositories();
     fetchSuggestedRepositories();
-  }, [location.pathname]); // Re-fetch logic
+  }, [location.pathname]);
 
   useEffect(() => {
     if (searchQuery === "") {
@@ -63,7 +64,6 @@ const Dashboard = () => {
 
   const currentUserId = localStorage.getItem("userId");
 
-  // FIX: Explicitly render a message if the user is not authenticated
   if (!currentUserId) {
     return (
       <div style={{ color: 'white', padding: '50px', textAlign: 'center' }}>
@@ -73,15 +73,12 @@ const Dashboard = () => {
     );
   }
 
-  // Render loading state while data is being fetched
   if (isLoading) {
     return <div style={{ color: 'white', padding: '50px', textAlign: 'center' }}>Loading repositories...</div>;
   }
 
-
   return (
     <section id="dashboard">
-      {/* Suggested Public Repositories */}
       <aside className="left-panel">
         <h3>Suggested Public Repositories</h3>
         {suggestedRepositories.map((repo) => (
@@ -99,7 +96,6 @@ const Dashboard = () => {
         ))}
       </aside>
 
-      {/* Main User's Repositories */}
       <main className="main-content">
         <h2>Your Repositories</h2>
         <div id="search">
@@ -128,7 +124,6 @@ const Dashboard = () => {
         ))}
       </main>
 
-      {/* Right Sidebar */}
       <aside className="right-panel">
         <h3>Upcoming Events</h3>
         <ul>

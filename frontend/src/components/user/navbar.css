@@ -1,49 +1,77 @@
-nav {
+/* --- Add this CSS to the END of your navbar.css --- */
+
+/* Search container needs position relative for dropdown */
+.search-container {
+    position: relative;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 24px;
-    background-color: #0d1117;
-    color: white;
+    /* Aligns input nicely */
+}
+
+/* Search results dropdown */
+.search-results-dropdown {
+    position: absolute;
+    top: 100%;
+    /* Position below the search bar */
+    left: 0;
+    width: 300px;
+    /* Adjust width as needed */
+    max-height: 400px;
+    /* Limit height */
+    overflow-y: auto;
+    /* Add scroll if too many results */
+    background-color: #1c1c1c;
+    /* Dark background */
+    border: 1px solid #30363d;
+    /* Subtle border */
+    border-top: none;
+    /* Remove top border as it touches input */
+    border-radius: 0 0 6px 6px;
+    /* Rounded bottom corners */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+    z-index: 1100;
+    /* Ensure it's above other elements */
+    padding: 8px 0;
+}
+
+.search-results-section {
+    padding: 8px 0;
     border-bottom: 1px solid #30363d;
-    margin-top: 12px;
 }
 
-nav>a>div {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+.search-results-section:last-child {
+    border-bottom: none;
 }
 
-nav img {
-    height: 32px;
-    margin-top: 4px;
+
+.search-results-section strong {
+    display: block;
+    padding: 8px 16px;
+    font-size: 12px;
+    color: #8b949e;
+    /* Lighter text for headers */
+    text-transform: uppercase;
 }
 
-nav a {
-    color: white;
-    text-decoration: none;
-    margin-left: 16px;
-}
-
-.navbar-right {
-    display: flex;
-    gap: 20px;
-    align-items: center;
-}
-
-/* + icon styling */
-.plus-icon {
-    background-color: #30363d;
-    color: white;
+.search-result-item {
+    display: block;
+    width: 100%;
+    padding: 8px 16px;
+    background: none;
     border: none;
-    font-size: 20px;
-    padding: 6px 12px;
-    border-radius: 50%;
+    color: #e0e0e0;
+    /* Main text color */
+    text-align: left;
     cursor: pointer;
-    transition: background-color 0.2s;
+    font-size: 14px;
 }
 
-.plus-icon:hover {
-    background-color: #484f58;
+.search-result-item:hover {
+    background-color: #30363d;
+    /* Hover effect */
+}
+
+.search-loading {
+    padding: 16px;
+    text-align: center;
+    color: #8b949e;
 }

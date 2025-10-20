@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./repo.css";
 
+// This URL for the CLI might need to be updated if you create a separate router for it.
 const CLI_API_URL = "http://localhost:3000/cli/config";
 
 const CreateRepo = () => {
@@ -33,8 +34,8 @@ const CreateRepo = () => {
         }
 
         try {
-            // 1. Create Repository via Web API (Saves to MongoDB)
-            const response = await fetch("http://localhost:3000/repo/create", {
+            // FIX: Added the correct '/api' prefix to the URL.
+            const response = await fetch("http://localhost:3000/api/repo/create", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -50,12 +51,13 @@ const CreateRepo = () => {
             const data = await response.json();
 
             if (!response.ok) {
+                // This will now show a proper error from the server instead of the HTML error.
                 throw new Error(data.error || 'Failed to create repository');
             }
 
             const newRepoId = data.repositoryID;
 
-            // 2. PERMANENT FIX: Update local config.json via the new API endpoint
+            // This part for updating local config seems advanced. Leaving as is.
             const configUpdateResponse = await fetch(`${CLI_API_URL}/set-repoid`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -63,13 +65,11 @@ const CreateRepo = () => {
             });
 
             if (!configUpdateResponse.ok) {
-                // IMPORTANT: If this fails, the CLI will not work! Warn the user.
                 console.warn(`WARNING: Failed to automatically set repoId in local config. HTTP Status: ${configUpdateResponse.status}. You must set it manually in .myGit/config.json.`);
             } else {
                 console.log(`Successfully wrote repoId ${newRepoId} to local config.json.`);
             }
 
-            // 3. Navigate to the new repository page
             navigate(`/repo/${newRepoId}`);
 
         } catch (error) {
@@ -82,9 +82,7 @@ const CreateRepo = () => {
         <div className="repo-form-wrapper">
             <form className="repo-form" onSubmit={handleSubmit}>
                 <h2>Create New Repository</h2>
-
-                {error && <div className="error-message">{error}</div>}
-
+                {error && <div className="error-message">Error: {error}</div>}
                 <label htmlFor="name">Repository Name</label>
                 <input
                     type="text"
@@ -94,7 +92,6 @@ const CreateRepo = () => {
                     onChange={handleChange}
                     required
                 />
-
                 <label htmlFor="description">Description</label>
                 <textarea
                     id="description"
@@ -102,7 +99,6 @@ const CreateRepo = () => {
                     value={repoData.description}
                     onChange={handleChange}
                 />
-
                 <div className="checkbox-row">
                     <input
                         type="checkbox"
@@ -113,7 +109,6 @@ const CreateRepo = () => {
                     />
                     <label htmlFor="isPublic">Make Public</label>
                 </div>
-
                 <button type="submit">Create</button>
             </form>
         </div>

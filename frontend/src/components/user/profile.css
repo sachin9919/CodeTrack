@@ -103,3 +103,72 @@
 #logout:hover {
     border: 1px solid white; 
 }
+
+/* Add to profile.css */
+
+.profile-main-content {
+    flex-grow: 1;
+    /* Allows this section to take up remaining space */
+    margin-left: 20px;
+    /* Add some space between user info and main content */
+}
+
+.profile-repos-section {
+    margin-top: 30px;
+    border-top: 1px solid #30363d;
+    padding-top: 20px;
+}
+
+.profile-repos-section h4 {
+    margin-bottom: 15px;
+    font-size: 18px;
+    color: #c9d1d9;
+    /* Lighter text color */
+}
+
+.profile-repo-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.profile-repo-item {
+    border-bottom: 1px solid #21262d;
+    /* Darker border */
+    padding: 15px 0;
+}
+
+.profile-repo-item:last-child {
+    border-bottom: none;
+}
+
+
+.profile-repo-item a {
+    color: #58a6ff;
+    /* GitHub link blue */
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.profile-repo-item a:hover {
+    text-decoration: underline;
+}
+
+.profile-repo-item p {
+    color: #8b949e;
+    /* Gray text for description */
+    font-size: 14px;
+    margin: 5px 0;
+}
+
+.profile-repo-item span {
+    display: inline-block;
+    border: 1px solid #30363d;
+    border-radius: 2em;
+    padding: 0px 7px;
+    font-size: 12px;
+    line-height: 18px;
+    color: #8b949e;
+    margin-top: 5px;
+}

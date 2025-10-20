@@ -6,11 +6,11 @@ const Commit = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [message, setMessage] = useState("");
-    const [error, setError] = useState(null); // FIX: New state for error messages
-    const [isSubmitting, setIsSubmitting] = useState(false); // New state for loading
+    const [error, setError] = useState(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleCommit = async () => {
-        setError(null); // Clear previous errors
+        setError(null);
         setIsSubmitting(true);
 
         if (!message.trim()) {
@@ -20,26 +20,25 @@ const Commit = () => {
         }
 
         try {
-            // FIX 1: Correct the API endpoint to include the repository ID
-            const response = await fetch(`http://localhost:3000/repo/${id}/commit`, {
+            // FIX: Added the correct '/api/' prefix to the URL.
+            const response = await fetch(`http://localhost:3000/api/repo/${id}/commit`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    repoId: id,
+                    // repoId is not needed in body, it's in the URL
                     message: message,
-                    userId: localStorage.getItem("userId") // Pass user ID to backend for tracking/verification
+                    userId: localStorage.getItem("userId")
                 }),
             });
 
             const result = await response.json();
 
             if (response.ok) {
-                alert("Commit successful!"); // NOTE: Keeping alert for success but recommend replacing this
+                // alert("Commit successful!"); // This is fine, or just navigate
                 navigate(`/repo/${id}`);
             } else {
-                // FIX 2: Set error state instead of alert()
                 setError(result.error || result.message || "Commit failed");
             }
         } catch (err) {
@@ -54,7 +53,7 @@ const Commit = () => {
         <>
             <div className="repo-action-page">
                 <h2>Commit Changes</h2>
-                {error && <div className="error-message" style={{ color: 'red', marginBottom: '15px' }}>{error}</div>}
+                {error && <div className="error-message" style={{ color: 'red', marginBottom: '15px' }}>Error: {error}</div>}
                 <textarea
                     placeholder="Enter commit message"
                     value={message}

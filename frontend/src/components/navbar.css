@@ -112,3 +112,60 @@
 .nav-icon-dropdown {
     display: none;
 }
+
+/* --- Add this new CSS to your navbar.css file --- */
+
+.profile-menu-container {
+    position: relative;
+    display: inline-block;
+}
+
+.profile-icon-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 16px;
+}
+
+.profile-icon-placeholder {
+    width: 32px;
+    height: 32px;
+    background-color: #555;
+    border-radius: 50%;
+    border: 1px solid #888;
+}
+
+.profile-dropdown-menu {
+    position: absolute;
+    top: 45px;
+    right: 0;
+    background-color: #1c1c1c;
+    border: 1px solid #333;
+    border-radius: 6px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+    min-width: 180px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    padding: 8px 0;
+}
+
+.profile-dropdown-menu a,
+.profile-dropdown-menu button {
+    color: #e0e0e0;
+    padding: 10px 16px;
+    text-decoration: none;
+    display: block;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    font-size: 14px;
+    width: 100%;
+}
+
+.profile-dropdown-menu a:hover,
+.profile-dropdown-menu button:hover {
+    background-color: #333;
+}

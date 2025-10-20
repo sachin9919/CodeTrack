@@ -1,0 +1,100 @@
+.settings-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 50px;
+    width: 100%;
+    min-height: 100vh;
+    color: #e0e0e0;
+}
+
+.settings-form-wrapper {
+    background-color: #1c1c1c;
+    padding: 30px 40px;
+    border-radius: 8px;
+    border: 1px solid #333;
+    width: 100%;
+    max-width: 500px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.settings-form-wrapper h2 {
+    text-align: center;
+    margin-bottom: 25px;
+    font-size: 24px;
+    color: #fff;
+}
+
+.username-display {
+    text-align: center;
+    margin-bottom: 25px;
+    color: #aaa;
+    font-size: 16px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #ccc;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    background-color: #111;
+    border: 1px solid #444;
+    border-radius: 5px;
+    color: #e0e0e0;
+    font-size: 16px;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #4CAF50;
+}
+
+.form-group input:disabled {
+    background-color: #2a2a2a;
+    cursor: not-allowed;
+}
+
+button[type="submit"] {
+    width: 100%;
+    padding: 12px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+button[type="submit"]:hover {
+    background-color: #218838;
+}
+
+button[type="submit"]:disabled {
+    background-color: #555;
+    cursor: not-allowed;
+}
+
+.success-message {
+    color: #28a745;
+    text-align: center;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+.error-message {
+    color: #dc3545;
+    text-align: center;
+    margin-bottom: 15px;
+    font-weight: bold;
+}

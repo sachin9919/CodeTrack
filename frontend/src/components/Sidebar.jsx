@@ -1,9 +1,11 @@
-import React, { useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react"; // Import useState
 import { NavLink } from "react-router-dom";
 import "./sidebar.css";
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
     const sidebarRef = useRef();
+    // FIX 1: Add state for the search query
+    const [searchQuery, setSearchQuery] = useState("");
 
     // Close on outside click
     useEffect(() => {
@@ -41,6 +43,19 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         };
     }, [toggleSidebar]);
 
+    // FIX 2: Define the sidebar links as an array
+    const sidebarLinks = [
+        { path: "/", name: "Overview", end: true },
+        { path: "/repos", name: "Repositories", end: false },
+        { path: "/projects", name: "Projects", end: false },
+        // Add more links here if needed
+    ];
+
+    // FIX 3: Filter the links based on the search query
+    const filteredLinks = sidebarLinks.filter(link =>
+        link.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
     return (
         <>
             {isOpen && <div className="sidebar-backdrop" onClick={toggleSidebar}></div>}
@@ -50,17 +65,37 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                 </button>
 
                 <div className="sidebar-user">
+                    {/* You might want to fetch and display the actual username here later */}
                     <p>Test User</p>
                 </div>
 
                 <div className="sidebar-search">
-                    <input type="text" placeholder="Recent search..." />
+                    {/* FIX 4: Connect input to state */}
+                    <input
+                        type="text"
+                        placeholder="Filter items..." // Changed placeholder
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
                 </div>
 
                 <div className="sidebar-links">
-                    <NavLink to="/" end className={({ isActive }) => (isActive ? "active" : "")}>Overview</NavLink>
-                    <NavLink to="/repos" className={({ isActive }) => (isActive ? "active" : "")}>Repositories</NavLink>
-                    <NavLink to="/projects" className={({ isActive }) => (isActive ? "active" : "")}>Projects</NavLink>
+                    {/* FIX 5: Map over the filtered links */}
+                    {filteredLinks.length > 0 ? (
+                        filteredLinks.map((link) => (
+                            <NavLink
+                                key={link.path}
+                                to={link.path}
+                                end={link.end} // Use end prop for exact match on "/"
+                                className={({ isActive }) => (isActive ? "active" : "")}
+                                onClick={toggleSidebar} // Close sidebar on link click
+                            >
+                                {link.name}
+                            </NavLink>
+                        ))
+                    ) : (
+                        <p className="no-results">No items match.</p> // Message if no links match search
+                    )}
                 </div>
             </div>
         </>

@@ -5,13 +5,15 @@ const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const http = require("http");
 const { Server } = require("socket.io");
-const mainRouter = require("./routes/main.router");
+
+// FIX 1: Import the routers you actually have.
+// We will use repoRouter for all repository-related API calls.
+const repoRouter = require("./routes/repo.router");
+// Assuming you have a userRouter based on your file structure. If not, you can remove this.
+const userRouter = require("./routes/user.router");
 
 const yargs = require("yargs");
 const { hideBin } = require("yargs/helpers");
-
-// FIX: Import fetch functionality for CLI HTTP requests
-const fetch = require('node-fetch');
 
 const { initRepo } = require("./controllers/init");
 const { addRepo } = require("./controllers/add");
@@ -19,6 +21,9 @@ const { commitRepo } = require("./controllers/commit");
 const { pushRepo } = require("./controllers/push");
 const { pullRepo } = require("./controllers/pull");
 const { revertRepo } = require("./controllers/revert");
+const { removeRepo } = require("./controllers/remove");
+const { logRepo } = require("./controllers/log");
+const { statusRepo } = require("./controllers/status");
 
 dotenv.config();
 
@@ -26,16 +31,31 @@ yargs(hideBin(process.argv))
   .command("start", "Starts a new server", {}, startServer)
   .command("init", "Initialise a new repository", {}, initRepo)
   .command(
-    "add <file>",
-    "Add a file to the repository",
+    "add <files...>",
+    "Add files to the repository staging area",
     (yargs) => {
-      yargs.positional("file", {
-        describe: "File to add to the staging area",
-        type: "string",
+      yargs.positional("files", {
+        describe: "Files to add to the staging area (space separated)",
+        type: "array",
       });
     },
     (argv) => {
-      addRepo(argv.file);
+      const filesToStage = argv.files;
+      addRepo(filesToStage);
+    }
+  )
+  .command(
+    "rm <files...>",
+    "Remove file from the staging area",
+    (yargs) => {
+      yargs.positional("files", {
+        describe: "Files to remove from staging (space separated)",
+        type: "array",
+      });
+    },
+    (argv) => {
+      const filesToRemove = argv.files;
+      removeRepo(filesToRemove);
     }
   )
   .command(
@@ -51,8 +71,10 @@ yargs(hideBin(process.argv))
       commitRepo(argv.message);
     }
   )
-  .command("push", "Push commits to S3", {}, pushRepo)
-  .command("pull", "Pull commits from S3", {}, pullRepo)
+  .command("push", "Push commits to S3", {}, () => pushRepo())
+  .command("pull", "Pull commits from S3", {}, () => pullRepo())
+  .command("log", "Show commit history", {}, logRepo)
+  .command("status", "Show working tree status", {}, statusRepo)
   .command(
     "revert <commitID>",
     "Revert to a specific commit",
@@ -72,7 +94,7 @@ yargs(hideBin(process.argv))
 function startServer() {
   const app = express();
   const port = process.env.PORT || 3000;
-  // Middleware
+
   app.use(cors({
     origin: ["http://localhost:5173", "http://localhost:3000"],
     credentials: true
@@ -83,19 +105,17 @@ function startServer() {
 
   const mongoURI = process.env.MONGODB_URI;
 
-  // ✅ Corrected connection with required options for Atlas
   mongoose
-    .connect(mongoURI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    })
-    .then(() => console.log("MongoDB connected!"))
-    .catch((err) => console.error("Unable to connect : ", err));
+    .connect(mongoURI)
+    .then(() => console.log("✅ MongoDB connected!"))
+    .catch((err) => console.error("❌ Unable to connect : ", err));
 
-  app.use(cors({ origin: "*" }));
-  app.use("/", mainRouter);
+  // FIX 2: Set up the API routes correctly.
+  // All repo-related requests will start with /api/repo
+  // All user-related requests will start with /api/user
+  app.use("/api/repo", repoRouter);
+  app.use("/api/user", userRouter);
 
-  let user = "test";
   const httpServer = http.createServer(app);
   const io = new Server(httpServer, {
     cors: {
@@ -106,22 +126,12 @@ function startServer() {
 
   io.on("connection", (socket) => {
     socket.on("joinRoom", (userID) => {
-      user = userID;
-      console.log("=====");
-      console.log(user);
-      console.log("=====");
+      console.log(`User ${socket.id} joined room: ${userID}`);
       socket.join(userID);
     });
   });
 
-  const db = mongoose.connection;
-
-  db.once("open", async () => {
-    console.log("CRUD operations called");
-    // CRUD operations
-  });
-
   httpServer.listen(port, () => {
-    console.log(`Server is running on PORT ${port}`);
+    console.log(`🚀 Server is running on PORT ${port}`);
   });
 }

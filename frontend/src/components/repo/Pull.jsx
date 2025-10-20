@@ -3,45 +3,46 @@ import { useParams } from "react-router-dom";
 import "./repo.css";
 
 const Pull = () => {
-    const { id } = useParams();
+    const { id: repoId } = useParams();
     const [isPulling, setIsPulling] = useState(false);
-    const [output, setOutput] = useState("");
+    const [message, setMessage] = useState("");
+    const [error, setError] = useState(null);
 
     const handlePull = async () => {
         setIsPulling(true);
+        setError(null);
+        setMessage("");
+
         try {
-            const response = await fetch("http://localhost:3000/pull", {
+            // FIX: Use the correct API path, including the '/api' prefix
+            const response = await fetch(`http://localhost:3000/api/repo/${repoId}/pull`, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ repoId: id }),
             });
 
             const result = await response.json();
-            if (response.ok) {
-                setOutput(result.message || "Pull successful!");
-            } else {
-                setOutput(result.message || "Pull failed.");
+
+            if (!response.ok) {
+                throw new Error(result.error || "Pull failed due to a server error.");
             }
-        } catch (error) {
-            console.error("Pull error:", error);
-            setOutput("Error occurred while pulling.");
+
+            setMessage(result.message || "Pull successful!");
+        } catch (err) {
+            console.error("Pull error:", err);
+            setError(err.message || "A network error occurred.");
         } finally {
             setIsPulling(false);
         }
     };
 
     return (
-        <>
-            <div className="repo-action-page">
-                <h2>Pull Latest Changes</h2>
-                <button onClick={handlePull} disabled={isPulling}>
-                    {isPulling ? "Pulling..." : "Pull from Remote"}
-                </button>
-                {output && <p style={{ marginTop: "15px" }}>{output}</p>}
-            </div>
-        </>
+        <div className="repo-action-page">
+            <h2>Pull Latest Changes (Repo ID: {repoId})</h2>
+            <button onClick={handlePull} disabled={isPulling}>
+                {isPulling ? "Pulling..." : "Pull from Remote"}
+            </button>
+            {error && <p style={{ marginTop: "15px", color: 'red' }}>Error: {error}</p>}
+            {message && <p style={{ marginTop: "15px", color: 'lightgreen' }}>{message}</p>}
+        </div>
     );
 };
 

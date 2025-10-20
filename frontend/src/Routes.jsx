@@ -3,6 +3,8 @@ import { useRoutes, useNavigate } from "react-router-dom";
 
 import Dashboard from "./components/dashboard/Dashboard";
 import Profile from "./components/user/Profile";
+// FIX 1: Import the new Settings component
+import Settings from "./components/user/Settings";
 import Login from "./components/auth/Login";
 import Signup from "./components/auth/Signup";
 import CreateRepo from "./components/repo/CreateRepo";
@@ -50,6 +52,8 @@ const ProjectRoutes = () => {
             children: [
                 { path: "/", element: <Dashboard /> },
                 { path: "/profile", element: <Profile /> },
+                // FIX 2: Add the new route for the Settings page
+                { path: "/settings", element: <Settings /> },
                 { path: "/createRepo", element: <CreateRepo /> },
                 { path: "/repo/:id", element: <RepoDetails /> },
                 { path: "/repo/:id/commit", element: <Commit /> },
