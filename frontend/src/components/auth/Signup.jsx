@@ -6,22 +6,26 @@ import { Box, Button, Heading } from "@primer/react";
 import "./auth.css";
 
 import logo from "../../assets/github-mark-white.svg";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"; // Import useNavigate
 
 const Signup = () => {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(""); // FIX 1: Add state for specific error messages
 
   const { setCurrentUser } = useAuth();
+  const navigate = useNavigate(); // FIX 2: Use the navigate hook for redirection
 
   const handleSignup = async (e) => {
     e.preventDefault();
+    setError(""); // Clear previous errors
 
     try {
       setLoading(true);
-      const res = await axios.post("http://localhost:3000/signup", {
+      // FIX 3: Corrected the API endpoint to include '/api/user'
+      const res = await axios.post("http://localhost:3000/api/user/signup", {
         email: email,
         password: password,
         username: username,
@@ -33,10 +37,12 @@ const Signup = () => {
       setCurrentUser(res.data.userId);
       setLoading(false);
 
-      window.location.href = "/";
+      // FIX 4: Use navigate for redirection instead of window.location.href
+      navigate("/");
     } catch (err) {
       console.error(err);
-      alert("Signup Failed!");
+      // FIX 5: Set the specific error message from the backend response
+      setError(err.response?.data?.message || "Signup Failed!");
       setLoading(false);
     }
   };
@@ -55,6 +61,9 @@ const Signup = () => {
         </div>
 
         <div className="login-box">
+          {/* FIX 6: Display the specific error message */}
+          {error && <p className="error-message">{error}</p>}
+
           <div>
             <label className="label">Username</label>
             <input
@@ -100,7 +109,7 @@ const Signup = () => {
             disabled={loading}
             onClick={handleSignup}
           >
-            {loading ? "Loading..." : "Signup"}
+            {loading ? "Loading..." : "Sign Up"}
           </Button>
         </div>
 
