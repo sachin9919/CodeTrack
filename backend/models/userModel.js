@@ -15,31 +15,37 @@ const UserSchema = new Schema(
     },
     password: {
       type: String,
+      // Consider adding minlength if not handled elsewhere
+    },
+    // Add avatarUrl field
+    avatarUrl: {
+      type: String,
+      default: '', // Default to empty string or a default avatar path
     },
     repositories: [
       {
-        default: [],
+        // default: [], // Default empty array is inherent in Mongoose arrays
         type: Schema.Types.ObjectId,
         ref: "Repository",
       },
     ],
     followedUsers: [
       {
-        default: [],
+        // default: [],
         type: Schema.Types.ObjectId,
         ref: "User",
       },
     ],
     starRepos: [
       {
-        default: [],
+        // default: [],
         type: Schema.Types.ObjectId,
         ref: "Repository",
       },
     ],
   },
   {
-    timestamps: true, // Move it here
+    timestamps: true,
   }
 );
 

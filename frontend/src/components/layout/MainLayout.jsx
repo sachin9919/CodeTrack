@@ -1,8 +1,8 @@
 import React from "react";
 import { Outlet } from "react-router-dom";
-import Navbar from "../Navbar";
-import Sidebar from "../Sidebar";
-import RightSidebar from "../RightSidebar";
+import Navbar from "../components/Navbar";
+import Sidebar from "../components/Sidebar";
+import RightSidebar from "../components/RightSidebar";
 
 const MainLayout = ({
     isSidebarOpen,

@@ -128,3 +128,155 @@
 .repo-action-page button:hover {
     background-color: #2ea043;
 }
+
+/* Add to repo.css or a global css file */
+.owner-link {
+    color: #58a6ff;
+    /* GitHub link blue */
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.owner-link:hover {
+    text-decoration: underline;
+}
+
+.action-error {
+    color: red;
+    background-color: #441111;
+    border: 1px solid red;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+}
+/* Add to repo.css */
+.repo-actions button.disabled-button {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: #555;
+    /* Optional: darker background */
+}
+
+/* Add to repo.css */
+
+.repo-header {
+    /* Ensure header allows items side-by-side */
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    /* Space between title and star button */
+    flex-wrap: wrap;
+    /* Allow wrapping on smaller screens */
+    margin-bottom: 15px;
+    border-bottom: 1px solid #30363d;
+    padding-bottom: 15px;
+}
+
+.star-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background-color: #21262d;
+    color: #c9d1d9;
+    border: 1px solid #30363d;
+    padding: 5px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.star-button:hover {
+    background-color: #30363d;
+    border-color: #8b949e;
+}
+
+.star-button.starred {
+    /* Optional: Style differently when starred */
+    color: #ffc107;
+    /* Example: yellow star */
+    border-color: #ffc107;
+}
+
+.star-button.starred:hover {
+    border-color: #e0a800;
+}
+
+
+.star-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* Add to repo.css */
+
+.repo-latest-content {
+    margin-top: 20px;
+    border-top: 1px solid #30363d;
+    padding-top: 15px;
+}
+
+.repo-latest-content h3 {
+    margin-bottom: 10px;
+    font-size: 16px;
+    color: #c9d1d9;
+}
+
+.content-display {
+    background-color: #0d1117;
+    /* Dark background for code block feel */
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 16px;
+    color: #c9d1d9;
+    font-family: monospace;
+    /* Use monospace font */
+    white-space: pre-wrap;
+    /* Wrap long lines */
+    word-break: break-all;
+    /* Break long words */
+    max-height: 400px;
+    /* Limit height */
+    overflow-y: auto;
+    /* Add scroll if content is long */
+}
+
+.no-content-message {
+    color: #8b949e;
+    font-style: italic;
+    font-size: 14px;
+}
+
+/* Optional: Add styling for commit page textarea */
+.commit-page .form-group textarea {
+    width: 100%;
+    padding: 10px;
+    background-color: #111;
+    border: 1px solid #444;
+    border-radius: 5px;
+    color: #e0e0e0;
+    font-size: 14px;
+    /* Slightly smaller for code */
+    font-family: monospace;
+    min-height: 200px;
+    /* Set a decent minimum height */
+    resize: vertical;
+    /* Allow vertical resizing */
+}
+
+.commit-page .form-group textarea:focus {
+    outline: none;
+    border-color: #4CAF50;
+}
+
+.commit-page .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #ccc;
+}
+
+.commit-page .form-group {
+    margin-bottom: 20px;
+}

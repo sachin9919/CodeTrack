@@ -1,39 +1,45 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useAuth } from "../../authContext";
-
 import { Box, Button, Heading } from "@primer/react";
 import "./auth.css";
-
 import logo from "../../assets/github-mark-white.svg";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"; // Import useNavigate
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(""); // Add error state
   const { setCurrentUser } = useAuth();
+  const navigate = useNavigate(); // Use navigate hook
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError(""); // Clear previous errors
 
     try {
       setLoading(true);
-      const res = await axios.post("http://localhost:3000/login", {
+      // FIX 1: Corrected API endpoint
+      const res = await axios.post("http://localhost:3000/api/user/login", {
         email: email,
         password: password,
       });
 
+      // Set items from response
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("userId", res.data.userId);
+      // FIX 2: Save the avatarUrl to localStorage
+      localStorage.setItem("avatarUrl", res.data.avatarUrl || ''); // Save avatarUrl
 
-      setCurrentUser(res.data.userId);
+      setCurrentUser(res.data.userId); // Update context
       setLoading(false);
 
-      window.location.href = "/";
+      navigate("/"); // Use navigate to redirect
     } catch (err) {
       console.error(err);
-      alert("Login Failed!");
+      // FIX 3: Set specific error message
+      setError(err.response?.data?.message || "Login Failed!");
       setLoading(false);
     }
   };
@@ -43,7 +49,6 @@ const Login = () => {
       <div className="login-logo-container">
         <img className="logo-login" src={logo} alt="Logo" />
       </div>
-
       <div className="login-box-wrapper">
         <div className="login-heading">
           <Box sx={{ padding: 1 }}>
@@ -51,6 +56,8 @@ const Login = () => {
           </Box>
         </div>
         <div className="login-box">
+          {/* FIX 4: Display error message */}
+          {error && <p className="error-message">{error}</p>}
           <div>
             <label className="label">Email address</label>
             <input
@@ -75,7 +82,6 @@ const Login = () => {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-
           <Button
             variant="primary"
             className="login-btn"

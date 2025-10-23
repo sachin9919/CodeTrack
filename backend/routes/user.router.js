@@ -1,27 +1,32 @@
 const express = require("express");
 const userController = require("../controllers/userController");
-// FIX 1: Import the protect middleware
 const { protect } = require('../middleware/authMiddleware');
-
+// FIX 1: Import the upload middleware
+const uploadAvatar = require('../middleware/uploadMiddleware');
 const userRouter = express.Router();
 
 // Public routes
-userRouter.get("/allUsers", userController.getAllUsers); // Usually public or admin-only
+userRouter.get("/allUsers", userController.getAllUsers);
 userRouter.post("/signup", userController.signup);
 userRouter.post("/login", userController.login);
 
 // --- Protected Routes ---
-// Apply the 'protect' middleware before the controller function for these routes
-// The middleware will run first, verify the token, and add req.user
 
 // Profile routes
-// Apply protect to getUserProfile so it can check 'isFollowing' based on req.user.id
 userRouter.get("/userProfile/:id", protect, userController.getUserProfile);
 userRouter.put("/updateProfile/:id", protect, userController.updateUserProfile);
 userRouter.delete("/deleteProfile/:id", protect, userController.deleteUserProfile);
 
+// FIX 2: Add route for avatar upload. Uses 'protect' then 'uploadAvatar' middleware.
+// 'uploadAvatar' expects a single file field named 'avatar'. PUT or POST can be used.
+userRouter.put("/updateAvatar", protect, uploadAvatar, userController.updateUserAvatar);
+
 // Follow/Unfollow routes
 userRouter.post("/follow/:idToFollow", protect, userController.followUser);
 userRouter.post("/unfollow/:idToUnfollow", protect, userController.unfollowUser);
+
+// FIX: Add Star/Unstar routes
+userRouter.post("/star/:repoId", protect, userController.starRepo);
+userRouter.post("/unstar/:repoId", protect, userController.unstarRepo);
 
 module.exports = userRouter;

@@ -98,3 +98,52 @@ button[type="submit"]:disabled {
     margin-bottom: 15px;
     font-weight: bold;
 }
+
+/* Add to settings.css */
+
+.avatar-preview {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.avatar-preview img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 2px solid #555;
+    object-fit: cover;
+    /* Ensure image covers the area nicely */
+}
+
+/* Style file input */
+.form-group input[type="file"] {
+    background-color: transparent;
+    border: none;
+    padding: 10px 0;
+    /* Adjust padding */
+    color: #999;
+    /* Lighter text for file input */
+}
+
+.form-group input[type="file"]::file-selector-button {
+    padding: 6px 12px;
+    margin-right: 10px;
+    background-color: #30363d;
+    color: #c9d1d9;
+    border: 1px solid #444;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.form-group input[type="file"]::file-selector-button:hover {
+    background-color: #484f58;
+}
+
+.file-name-display {
+    display: inline-block;
+    margin-left: 10px;
+    font-size: 12px;
+    color: #8b949e;
+    font-style: italic;
+}

@@ -1,135 +1,154 @@
-import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import React, { useEffect, useState, useCallback } from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import axios from 'axios';
 import "./repo.css";
+import { StarIcon } from '@primer/octicons-react';
 
 const RepoDetails = () => {
-    const { id } = useParams();
+    const { id: repoId } = useParams();
     const navigate = useNavigate();
     const [repo, setRepo] = useState(null);
     const [loading, setLoading] = useState(true);
     const [editingDescription, setEditingDescription] = useState(false);
     const [newDescription, setNewDescription] = useState("");
     const [pageError, setPageError] = useState(null);
-    const userId = localStorage.getItem("userId");
+    const loggedInUserId = localStorage.getItem("userId");
+    const [isStarred, setIsStarred] = useState(false);
+    const [starLoading, setStarLoading] = useState(false);
 
-    useEffect(() => {
-        fetchRepoDetails();
-    }, [id]);
-
-    const fetchRepoDetails = async () => {
+    const fetchRepoDetails = useCallback(async (isInitialLoad = true) => {
+        if (isInitialLoad) setLoading(true);
         setPageError(null);
         try {
-            // FIX 1: Added the '/api' prefix to the URL.
-            const response = await fetch(`http://localhost:3000/api/repo/${id}`);
-            const data = await response.json();
+            const token = localStorage.getItem('token');
+            const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
 
-            if (response.ok) {
-                setRepo(data);
-                setNewDescription(data.description || "");
-            } else {
-                setPageError(data.error || "Repository not found");
-            }
+            const [repoResponse, userResponse] = await Promise.all([
+                fetch(`http://localhost:3000/api/repo/${repoId}`, config),
+                loggedInUserId ? fetch(`http://localhost:3000/api/user/userProfile/${loggedInUserId}`, config) : Promise.resolve(null)
+            ]);
+
+            const repoData = await repoResponse.json();
+            const userData = userResponse ? await userResponse.json() : null;
+
+            if (!repoResponse.ok || !repoData?._id) { throw new Error(repoData.error || `Repo not found (Status: ${repoResponse.status})`); }
+
+            setRepo(repoData);
+            setNewDescription(repoData.description || "");
+
+            if (userData?.starRepos?.includes(repoId)) { setIsStarred(true); }
+            else { setIsStarred(false); }
+
+            if (isInitialLoad) setPageError(null);
+            return repoData;
+
         } catch (err) {
-            console.error("Error fetching repository:", err);
-            setPageError("Network error or server unreachable.");
-        } finally {
-            setLoading(false);
-        }
-    };
+            console.error("Error fetching repository details:", err);
+            setPageError(err.message || "Network error.");
+            setRepo(null); setIsStarred(false); return null;
+        } finally { if (isInitialLoad) setLoading(false); }
+    }, [repoId, loggedInUserId]);
+
+    useEffect(() => { fetchRepoDetails(true); }, [fetchRepoDetails]);
 
     const handleDelete = async () => {
-        if (!window.confirm("Are you sure you want to delete this repository? This action cannot be undone.")) {
-            return;
-        }
+        if (!window.confirm("Are you sure you want to delete this repository? This action cannot be undone.")) { return; }
         setPageError(null);
-
+        const token = localStorage.getItem('token');
         try {
-            // FIX 2: Added the '/api' prefix to the URL.
-            const response = await fetch(`http://localhost:3000/api/repo/delete/${id}`, {
+            const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+            const response = await fetch(`http://localhost:3000/api/repo/delete/${repoId}`, { // Use repoId
                 method: "DELETE",
+                headers: config.headers,
             });
-
             const data = await response.json();
-
-            if (response.ok) {
-                navigate("/", { replace: true }); // Navigate to dashboard after delete
-            } else {
-                setPageError(data.error || "Failed to delete repository");
-            }
+            if (response.ok) { navigate("/", { replace: true }); }
+            else { throw new Error(data.error || "Failed to delete repository"); }
         } catch (err) {
             console.error("Deletion error:", err);
-            setPageError("Error communicating with the server during deletion.");
+            setPageError(err.message || "Error communicating with the server during deletion.");
         }
     };
-
     const toggleVisibility = async () => {
         setPageError(null);
+        const token = localStorage.getItem('token');
         try {
-            // FIX 3: Added the '/api' prefix to the URL.
-            const response = await fetch(`http://localhost:3000/api/repo/toggle/${id}`, {
+            const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+            const response = await fetch(`http://localhost:3000/api/repo/toggle/${repoId}`, { // Use repoId
                 method: "PATCH",
+                headers: config.headers,
             });
-
             const data = await response.json();
-            if (response.ok) {
-                setRepo(data.repository);
-            } else {
-                setPageError(data.error || "Failed to toggle visibility");
-            }
+            if (response.ok && data.repository) { setRepo(data.repository); }
+            else { throw new Error(data.error || "Failed to toggle visibility"); }
         } catch (err) {
             console.error("Error toggling visibility:", err);
-            setPageError("Error communicating with the server.");
+            setPageError(err.message || "Error communicating with the server.");
         }
     };
-
     const handleDescriptionUpdate = async () => {
         setPageError(null);
+        const token = localStorage.getItem('token');
         try {
-            // FIX 4: Added the '/api' prefix to the URL.
-            const response = await fetch(`http://localhost:3000/api/repo/update/${id}`, {
+            const config = token ? { headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` } } : { headers: { 'Content-Type': 'application/json' } };
+            const response = await fetch(`http://localhost:3000/api/repo/update/${repoId}`, { // Use repoId
                 method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    description: newDescription,
-                }),
+                headers: config.headers,
+                body: JSON.stringify({ description: newDescription }),
             });
-
             const data = await response.json();
-            if (response.ok) {
-                setRepo(data.repository);
-                setEditingDescription(false);
-            } else {
-                setPageError(data.error || "Update failed");
-            }
+            if (response.ok && data.repository) { setRepo(data.repository); setEditingDescription(false); }
+            else { throw new Error(data.error || "Update failed"); }
         } catch (err) {
             console.error("Update error:", err);
-            setPageError("Error communicating with the server.");
+            setPageError(err.message || "Error communicating with the server.");
         }
     };
+    const showNotOwnerAlert = (action) => { alert(`You are not the owner of this repository and cannot perform the '${action}' action.`); };
 
-    const isOwner = repo?.owner?._id === userId;
+    // Handle star/unstar toggle
+    const handleStarToggle = async () => {
+        if (!loggedInUserId) { alert("Please log in to star repositories."); return; };
+        setStarLoading(true);
+        setPageError(null);
+        const action = isStarred ? 'unstar' : 'star';
+        const url = `http://localhost:3000/api/user/${action}/${repoId}`; // Use repoId
+        const token = localStorage.getItem('token');
+        try {
+            const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+            const response = await axios.post(url, {}, config);
+            if (response.data) { console.log(response.data.message); setIsStarred(!isStarred); }
+        } catch (err) {
+            console.error(`Error ${action}ing repo:`, err);
+            setPageError(err.response?.data?.error || `Failed to ${action}.`);
+        } finally { setStarLoading(false); }
+    };
 
-    if (loading) return <div style={{ color: "white", padding: "20px" }}>Loading...</div>;
-    // FIX 5: Use pageError state for a more informative message.
-    if (pageError || !repo) {
-        return <div style={{ color: "white", padding: "20px" }}>{pageError || "Repository not found."}</div>;
-    }
+    const isOwner = repo?.owner?._id === loggedInUserId;
+
+    // --- Render Logic ---
+    if (loading) return <div style={{ color: "white", padding: "20px" }}>Loading repository details...</div>;
+    if (pageError && !repo) return <div style={{ color: "red", padding: "20px" }}>Error: {pageError}</div>;
+    if (!repo) return <div style={{ color: "white", padding: "20px" }}>Repository not found or could not be loaded.</div>;
 
     return (
         <div className="repo-details-page">
-            {pageError && <div className="error-message" style={{ color: 'red', marginBottom: '15px' }}>Error: {pageError}</div>}
+            {pageError && <div className="error-message action-error">Error: {pageError}</div>}
             <div className="repo-header">
                 <h2>{repo.name}</h2>
+                <button
+                    onClick={handleStarToggle}
+                    disabled={starLoading || !loggedInUserId}
+                    className={`star-button ${isStarred ? 'starred' : ''}`}
+                    title={loggedInUserId ? (isStarred ? "Unstar this repository" : "Star this repository") : "Log in to star"}
+                >
+                    <StarIcon size={16} />
+                    {starLoading ? '...' : (isStarred ? 'Unstar' : 'Star')}
+                </button>
                 {isOwner && editingDescription ? (
                     <>
-                        <textarea
-                            value={newDescription}
-                            onChange={(e) => setNewDescription(e.target.value)}
-                            rows={3}
-                        />
-                        <button onClick={handleDescriptionUpdate}>Save</button>
+                        <textarea value={newDescription} onChange={(e) => setNewDescription(e.target.value)} rows={3} />
+                        <button onClick={handleDescriptionUpdate}>Save Description</button>
                         <button onClick={() => setEditingDescription(false)}>Cancel</button>
                     </>
                 ) : (
@@ -141,27 +160,30 @@ const RepoDetails = () => {
             </div>
             <div className="repo-meta">
                 <p><strong>Visibility:</strong> {repo.visibility ? "Public" : "Private"}</p>
-                <p><strong>Owner:</strong> {repo.owner?.username || "You"}</p>
+                <p><strong>Owner:</strong>{' '} {repo.owner?._id ? (<Link to={`/profile/${repo.owner._id}`} className="owner-link">{repo.owner.username || "Unknown"}</Link>) : ("Unknown")}</p>
                 <p><strong>Created At:</strong> {new Date(repo.createdAt).toLocaleString()}</p>
                 {isOwner && <button onClick={toggleVisibility}>Toggle Visibility</button>}
             </div>
-            <div className="repo-content">
-                <h3>Commits / Content:</h3>
-                {repo.content.length === 0 ? (
-                    <p>No commits yet.</p>
+
+            {/* Display Latest Content */}
+            <div className="repo-latest-content">
+                <h3>Latest Content (e.g., README)</h3>
+                {repo.latestContent ? (
+                    <pre className="content-display">{repo.latestContent}</pre>
                 ) : (
-                    <ul>
-                        {repo.content.map((entry, idx) => (
-                            <li key={idx}>{typeof entry === 'object' ? entry.message : entry}</li>
-                        ))}
-                    </ul>
+                    <p className="no-content-message">No content has been committed yet.</p>
                 )}
             </div>
+
+            <div className="repo-content">
+                <h3>Commit History:</h3>
+                {repo.content && repo.content.length === 0 ? (<p>No commits yet.</p>) : (<ul>{(repo.content || []).map((entry, idx) => (<li key={entry._id || idx}>{entry?.message || 'Commit entry invalid'}</li>))}</ul>)}
+            </div>
             <div className="repo-actions">
-                <button onClick={() => navigate(`/repo/${id}/commit`)}>Commit</button>
-                <button onClick={() => navigate(`/repo/${id}/push`)}>Push</button>
-                <button onClick={() => navigate(`/repo/${id}/pull`)}>Pull</button>
-                <button onClick={() => navigate(`/repo/${id}/issues`)}>View Issues</button>
+                <button onClick={() => isOwner ? navigate(`/repo/${repoId}/commit`) : showNotOwnerAlert('Commit')} className={!isOwner ? 'disabled-button' : ''} > Commit </button>
+                <button onClick={() => isOwner ? navigate(`/repo/${repoId}/push`) : showNotOwnerAlert('Push')} className={!isOwner ? 'disabled-button' : ''} > Push </button>
+                <button onClick={() => isOwner ? navigate(`/repo/${repoId}/pull`) : showNotOwnerAlert('Pull')} className={!isOwner ? 'disabled-button' : ''} > Pull </button>
+                <button onClick={() => navigate(`/repo/${repoId}/issues`)}>View Issues</button>
                 {isOwner && <button onClick={handleDelete} className="delete-btn">Delete Repository</button>}
             </div>
         </div>
