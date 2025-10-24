@@ -128,12 +128,12 @@ const RepoDetails = () => {
 
     // --- Render Logic ---
     if (loading) return <div style={{ color: "white", padding: "20px" }}>Loading repository details...</div>;
-    if (pageError && !repo) return <div style={{ color: "red", padding: "20px" }}>Error: {pageError}</div>;
+    if (pageError && !repo) return <div className="action-error page-error">Error: {pageError}</div>;
     if (!repo) return <div style={{ color: "white", padding: "20px" }}>Repository not found or could not be loaded.</div>;
 
     return (
         <div className="repo-details-page">
-            {pageError && <div className="error-message action-error">Error: {pageError}</div>}
+            {pageError && <div className="action-error">Error: {pageError}</div>}
             <div className="repo-header">
                 <h2>{repo.name}</h2>
                 <button
@@ -147,22 +147,24 @@ const RepoDetails = () => {
                 </button>
                 {isOwner && editingDescription ? (
                     <>
+                        {/* Added save-desc and cancel-desc classes for styling flexibility */}
                         <textarea value={newDescription} onChange={(e) => setNewDescription(e.target.value)} rows={3} />
-                        <button onClick={handleDescriptionUpdate}>Save Description</button>
-                        <button onClick={() => setEditingDescription(false)}>Cancel</button>
+                        <button onClick={handleDescriptionUpdate} className="primary-action-button save-desc">Save Description</button>
+                        <button onClick={() => setEditingDescription(false)} className="secondary-action-button cancel-desc">Cancel</button>
                     </>
                 ) : (
                     <>
-                        <p>{repo.description || "No description provided."}</p>
-                        {isOwner && <button onClick={() => setEditingDescription(true)}>Edit Description</button>}
+                        <p className="repo-description-text">{repo.description || "No description provided."}</p>
+                        {isOwner && <button onClick={() => setEditingDescription(true)} className="secondary-action-button edit-desc">Edit Description</button>}
                     </>
                 )}
             </div>
             <div className="repo-meta">
-                <p><strong>Visibility:</strong> {repo.visibility ? "Public" : "Private"}</p>
+                <p><strong>Visibility:</strong> <span className={`visibility-status ${repo.visibility ? 'public' : 'private'}`}>{repo.visibility ? "Public" : "Private"}</span></p>
                 <p><strong>Owner:</strong>{' '} {repo.owner?._id ? (<Link to={`/profile/${repo.owner._id}`} className="owner-link">{repo.owner.username || "Unknown"}</Link>) : ("Unknown")}</p>
                 <p><strong>Created At:</strong> {new Date(repo.createdAt).toLocaleString()}</p>
-                {isOwner && <button onClick={toggleVisibility}>Toggle Visibility</button>}
+                {/* Applied secondary-action-button class */}
+                {isOwner && <button onClick={toggleVisibility} className="secondary-action-button toggle-visibility-btn">Toggle Visibility</button>}
             </div>
 
             {/* Display Latest Content */}
@@ -179,12 +181,34 @@ const RepoDetails = () => {
                 <h3>Commit History:</h3>
                 {repo.content && repo.content.length === 0 ? (<p>No commits yet.</p>) : (<ul>{(repo.content || []).map((entry, idx) => (<li key={entry._id || idx}>{entry?.message || 'Commit entry invalid'}</li>))}</ul>)}
             </div>
+            {/* Action Buttons Section */}
             <div className="repo-actions">
-                <button onClick={() => isOwner ? navigate(`/repo/${repoId}/commit`) : showNotOwnerAlert('Commit')} className={!isOwner ? 'disabled-button' : ''} > Commit </button>
-                <button onClick={() => isOwner ? navigate(`/repo/${repoId}/push`) : showNotOwnerAlert('Push')} className={!isOwner ? 'disabled-button' : ''} > Push </button>
-                <button onClick={() => isOwner ? navigate(`/repo/${repoId}/pull`) : showNotOwnerAlert('Pull')} className={!isOwner ? 'disabled-button' : ''} > Pull </button>
-                <button onClick={() => navigate(`/repo/${repoId}/issues`)}>View Issues</button>
-                {isOwner && <button onClick={handleDelete} className="delete-btn">Delete Repository</button>}
+                {/* Used primary-action-button for Commit to emphasize it as the main action */}
+                <button
+                    onClick={() => isOwner ? navigate(`/repo/${repoId}/commit`) : showNotOwnerAlert('Commit')}
+                    className={`primary-action-button commit-btn ${!isOwner ? 'disabled-button' : ''}`}
+                    disabled={!isOwner}
+                >
+                    Commit
+                </button>
+                {/* Used secondary-action-button for less critical actions */}
+                <button
+                    onClick={() => isOwner ? navigate(`/repo/${repoId}/push`) : showNotOwnerAlert('Push')}
+                    className={`secondary-action-button push-btn ${!isOwner ? 'disabled-button' : ''}`}
+                    disabled={!isOwner}
+                >
+                    Push
+                </button>
+                <button
+                    onClick={() => isOwner ? navigate(`/repo/${repoId}/pull`) : showNotOwnerAlert('Pull')}
+                    className={`secondary-action-button pull-btn ${!isOwner ? 'disabled-button' : ''}`}
+                    disabled={!isOwner}
+                >
+                    Pull
+                </button>
+                <button onClick={() => navigate(`/repo/${repoId}/issues`)} className="secondary-action-button issues-btn">View Issues</button>
+                {/* Used delete-button for the destructive action */}
+                {isOwner && <button onClick={handleDelete} className="delete-button">Delete Repository</button>}
             </div>
         </div>
     );

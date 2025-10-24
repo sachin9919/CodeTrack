@@ -22,7 +22,6 @@ async function signup(req, res) {
 
     const token = jwt.sign({ id: savedUser._id }, process.env.JWT_SECRET_KEY, { expiresIn: "8h" });
 
-    // FIX: Send back avatarUrl (which is '' by default from the model)
     res.json({ token, userId: savedUser._id, avatarUrl: savedUser.avatarUrl });
   } catch (err) {
     console.error("Error during signup : ", err.message);
@@ -30,12 +29,12 @@ async function signup(req, res) {
   }
 }
 
+
 // --- Login ---
 async function login(req, res) {
   const { email, password } = req.body;
   try {
-    // FIX: Make sure to fetch avatarUrl on login
-    const user = await User.findOne({ email }).select('+password avatarUrl'); // Select password AND avatarUrl
+    const user = await User.findOne({ email }).select('+password avatarUrl');
     if (!user) {
       return res.status(400).json({ message: "Invalid credentials!" });
     }
@@ -46,7 +45,6 @@ async function login(req, res) {
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, { expiresIn: "8h" });
 
-    // FIX: Send back avatarUrl on login
     res.json({ token, userId: user._id, avatarUrl: user.avatarUrl });
   } catch (err) {
     console.error("Error during login : ", err.message);
@@ -57,7 +55,6 @@ async function login(req, res) {
 // --- Get All Users ---
 async function getAllUsers(req, res) {
   try {
-    // FIX: Also select avatarUrl
     const users = await User.find({}).select('username _id avatarUrl');
     res.json(users);
   } catch (err) {
@@ -78,7 +75,6 @@ async function getUserProfile(req, res) {
   try {
     const [user, followerCount] = await Promise.all([
       User.findById(profileUserId)
-        // FIX: Explicitly select avatarUrl
         .select('username email followedUsers repositories starRepos createdAt avatarUrl')
         .populate({
           path: 'repositories', select: 'name description visibility _id',
@@ -104,7 +100,7 @@ async function getUserProfile(req, res) {
     userProfileData.followingCount = followingCount;
     userProfileData.followerCount = followerCount;
     userProfileData.isFollowing = isFollowing;
-    userProfileData.loggedInUserStarredRepoIds = starredRepoIds; // Use a different key
+    userProfileData.loggedInUserStarredRepoIds = starredRepoIds;
 
     res.send(userProfileData);
 
@@ -113,6 +109,7 @@ async function getUserProfile(req, res) {
     res.status(500).json({ error: "Server error fetching profile." });
   }
 }
+
 
 // --- Update User Profile ---
 async function updateUserProfile(req, res) {
@@ -157,6 +154,7 @@ async function deleteUserProfile(req, res) {
     res.status(500).json({ error: "Server error deleting profile." });
   }
 }
+
 
 // --- Follow User ---
 async function followUser(req, res) {
@@ -246,6 +244,7 @@ async function unstarRepo(req, res) {
     ).select('starRepos');
 
     if (!updatedUser) { return res.status(404).json({ error: "Current user not found." }); }
+
     res.json({ message: `Successfully unstarred repository '${repo?.name || repoIdToUnstar}'`, starRepos: updatedUser.starRepos });
   } catch (err) {
     console.error("Error during unstar repo: ", err.message);
@@ -275,6 +274,127 @@ async function updateUserAvatar(req, res) {
   }
 }
 
+// --- Get Starred Repos ---
+async function getStarredRepos(req, res) {
+  let profileUserId = req.params.id;
+
+  if (profileUserId && profileUserId.startsWith(':')) {
+    profileUserId = profileUserId.substring(1);
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(profileUserId)) {
+    return res.status(400).json({ message: "Invalid profile user ID format." });
+  }
+
+  try {
+    const user = await User.findById(profileUserId)
+      .select('starRepos')
+      .populate({
+        path: 'starRepos',
+        select: 'name description owner visibility createdAt',
+        populate: {
+          path: 'owner',
+          select: 'username _id'
+        }
+      });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+    res.json(user.starRepos);
+
+  } catch (err) {
+    console.error("Error fetching starred repos: ", err.message);
+    res.status(500).json({ error: "Server error fetching starred repos." });
+  }
+}
+
+
+// --- GET CONTRIBUTION DATA FOR HEAT MAP (CORRECTED) ---
+async function getContributionData(req, res) {
+  let profileUserId = req.params.id; // Use let
+
+  // --- ID Parsing/Validation (omitted logging) ---
+  if (profileUserId && profileUserId.startsWith(':')) {
+    profileUserId = profileUserId.substring(1);
+  }
+  if (!mongoose.Types.ObjectId.isValid(profileUserId)) {
+    return res.status(400).json({ message: "Invalid user ID format." });
+  }
+
+  let userId;
+  try {
+    userId = new mongoose.Types.ObjectId(profileUserId);
+  } catch (error) {
+    return res.status(400).json({ message: "Invalid user ID format during conversion." });
+  }
+
+
+  try {
+    const contributions = await Repository.aggregate([
+      // 1. Deconstruct the 'content' (commits) array
+      { $unwind: "$content" },
+
+      // 2. Find all commits where the author matches the user ID
+      { $match: { "content.author": userId } },
+
+      // *** CRITICAL FIX: Shift the UTC date to local IST time before converting to string ***
+      {
+        $addFields: {
+          // Add 5 hours and 30 minutes (5.5 * 60 * 60 * 1000 milliseconds) to the UTC timestamp
+          localTimestamp: {
+            $add: [
+              "$content.timestamp",
+              19800000 // 5 hours 30 minutes in milliseconds
+            ]
+          }
+        }
+      },
+
+      // 3. Project the locally corrected timestamp into a YYYY-MM-DD date string (in UTC format now)
+      {
+        $project: {
+          _id: 0,
+          date: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$localTimestamp", // Use the new localTimestamp field
+              // We no longer need the 'timezone' field here since the time is already corrected
+            }
+          }
+        }
+      }, // <<<--- COMMA IS HERE
+
+      // 4. Group all commits by that date string and count them
+      {
+        $group: {
+          _id: "$date",
+          count: { $sum: 1 }
+        }
+      },
+
+      // 5. Format the output to match what the heat map component needs
+      {
+        $project: {
+          _id: 0,
+          date: "$_id",
+          count: "$count"
+        }
+      },
+
+      // 6. Sort by date (good practice)
+      { $sort: { "date": 1 } }
+    ]);
+    console.log(`DEBUG: Aggregation finished. Found ${contributions.length} contribution days.`); // Log result count
+
+    res.json(contributions);
+
+  } catch (err) {
+    console.error("Error fetching contribution data during aggregation: ", err.message); // More specific error log
+    res.status(500).json({ error: "Server error fetching contribution data." });
+  }
+}
+
 module.exports = {
   getAllUsers,
   signup,
@@ -286,5 +406,7 @@ module.exports = {
   unfollowUser,
   starRepo,
   unstarRepo,
-  updateUserAvatar, // Ensure this is exported
+  updateUserAvatar,
+  getStarredRepos,
+  getContributionData,
 };

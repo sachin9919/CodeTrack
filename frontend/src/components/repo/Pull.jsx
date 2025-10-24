@@ -13,15 +13,33 @@ const Pull = () => {
         setError(null);
         setMessage("");
 
+        // --- ADDED: Get token from localStorage ---
+        const token = localStorage.getItem('token');
+        if (!token) {
+            setError("Not authorized. Please log in again.");
+            setIsPulling(false);
+            return;
+        }
+        // --- END ADDED ---
+
         try {
-            // FIX: Use the correct API path, including the '/api' prefix
+            // --- ADDED: Authorization header ---
+            const headers = {
+                'Authorization': `Bearer ${token}`
+            };
+            // --- END ADDED ---
+
             const response = await fetch(`http://localhost:3000/api/repo/${repoId}/pull`, {
                 method: "POST",
+                headers: headers // --- ADDED headers here ---
             });
 
             const result = await response.json();
 
             if (!response.ok) {
+                if (response.status === 401 || response.status === 403) {
+                    throw new Error(result.error || "Authorization failed.");
+                }
                 throw new Error(result.error || "Pull failed due to a server error.");
             }
 

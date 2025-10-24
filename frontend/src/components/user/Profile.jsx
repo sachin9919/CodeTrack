@@ -3,9 +3,10 @@ import { useNavigate, Link, useParams } from "react-router-dom";
 import axios from "axios";
 import "./profile.css";
 import { UnderlineNav } from "@primer/react";
-import { BookIcon, RepoIcon } from "@primer/octicons-react";
+import { BookIcon, RepoIcon } from "@primer/octicons-react"; // RepoIcon imported
 import HeatMapProfile from "./HeatMap";
 import { useAuth } from "../../authContext";
+import Spinner from "../Spinner"; // Import Spinner
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -15,11 +16,15 @@ const Profile = () => {
 
   const [userDetails, setUserDetails] = useState(null);
   const [isFollowing, setIsFollowing] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true); // Main profile loading
   const [followLoading, setFollowLoading] = useState(false);
   const [error, setError] = useState('');
   const { setCurrentUser } = useAuth();
+  const [activeTab, setActiveTab] = useState('overview');
+  const [starredRepos, setStarredRepos] = useState(null);
+  const [isStarredLoading, setIsStarredLoading] = useState(false); // Specific loading for starred
 
+  // Fetches main user profile details
   const fetchUserDetails = useCallback(async (isInitialLoad = false) => {
     if (isInitialLoad) { setIsLoading(true); setError(''); setUserDetails(null); setIsFollowing(false); }
     else { setError(''); }
@@ -38,6 +43,7 @@ const Profile = () => {
     } finally { if (isInitialLoad) setIsLoading(false); }
   }, [profileUserId]);
 
+  // Load initial profile data on mount or when ID changes
   useEffect(() => {
     const loadData = async () => {
       const data = await fetchUserDetails(true);
@@ -52,6 +58,30 @@ const Profile = () => {
     };
     loadData();
   }, [fetchUserDetails, loggedInUserId]);
+
+  // Fetches starred repos only when the 'starred' tab is active
+  useEffect(() => {
+    if (activeTab === 'starred' && !starredRepos) {
+      const fetchStarredRepos = async () => {
+        setIsStarredLoading(true);
+        setError(''); // Clear errors from previous tab/load
+        try {
+          const token = localStorage.getItem('token');
+          const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+          const response = await axios.get(`http://localhost:3000/api/user/${profileUserId}/starred`, config);
+          setStarredRepos(response.data || []);
+        } catch (err) {
+          console.error("Cannot fetch starred repos: ", err);
+          const backendError = err.response?.data?.message || err.response?.data?.error || 'Failed to load starred repositories.';
+          setError(backendError);
+          setStarredRepos([]); // Ensure it's an empty array on error
+        } finally {
+          setIsStarredLoading(false);
+        }
+      };
+      fetchStarredRepos();
+    }
+  }, [activeTab, starredRepos, profileUserId]); // Dependencies
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -72,6 +102,7 @@ const Profile = () => {
       const response = await axios.post(url, {}, config);
       if (response.data) {
         console.log(response.data.message);
+        // Refresh profile details to get updated follower count and isFollowing status
         const updatedUserDetails = await fetchUserDetails(false);
         if (updatedUserDetails) {
           setUserDetails(updatedUserDetails);
@@ -85,25 +116,81 @@ const Profile = () => {
     } finally { setFollowLoading(false); }
   };
 
+  // --- Render Loading State ---
   if (isLoading) {
-    return <div style={{ color: 'white', padding: '50px', textAlign: 'center' }}>Loading profile...</div>;
+    // Optional: Use a full page overlay spinner for initial load
+    // return <div className="page-loading-overlay"><Spinner /></div>;
+    return <Spinner />; // Or just the regular spinner
   }
-  if (error || !userDetails) {
-    return <div style={{ color: 'red', padding: '50px', textAlign: 'center' }}>
-      {`Error: ${error || 'Could not load user profile. User may not exist or access denied.'}`}
-    </div>;
+
+  // --- Render Error State (if main profile load failed) ---
+  // We check !userDetails because error might be set from a failed starred repo fetch later
+  if (error && !userDetails) {
+    return <div className="error-message page-error">
+      {`Error: ${error || 'Could not load user profile.'}`}
+    </div>; // Added class
+  }
+
+  // --- Render Null if no user details (shouldn't happen if not loading/error) ---
+  if (!userDetails) {
+    return null;
   }
 
   const isOwnProfile = loggedInUserId === profileUserId;
 
+  // --- Reusable Repo List Renderer ---
+  const renderRepoList = (repos, listTitle, noReposMessage) => {
+    return (
+      <div className="profile-repos-section">
+        <h4>{listTitle}</h4>
+        {repos && repos.length > 0 ? (
+          <ul className="profile-repo-list">
+            {repos.map(repo => (
+              <li key={repo._id} className="profile-repo-item">
+                <Link to={`/repo/${repo._id}`}>
+                  {/* Added Icon */}
+                  <RepoIcon size={16} verticalAlign="middle" />
+                  {activeTab === 'starred' && repo.owner && repo.owner.username !== userDetails.username && (
+                    <span className="repo-owner-prefix">{repo.owner.username} / </span>
+                  )}
+                  {repo.name}
+                </Link>
+                <p>{repo.description || 'No description'}</p>
+                <span>{repo.visibility ? 'Public' : 'Private'}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (<p className="no-repos-message">{noReposMessage}</p>)}
+      </div>
+    );
+  };
+
+  // --- Main Render ---
   return (
     <>
-      <UnderlineNav aria-label="Repository">
-        <UnderlineNav.Item aria-current="page" icon={BookIcon} sx={{ backgroundColor: "transparent", color: "white", "&:hover": { textDecoration: "underline", color: "white" } }}>Overview</UnderlineNav.Item>
-        <UnderlineNav.Item icon={RepoIcon} sx={{ backgroundColor: "transparent", color: "whitesmoke", "&:hover": { textDecoration: "underline", color: "white" } }}>Starred Repositories</UnderlineNav.Item>
+      <UnderlineNav aria-label="Profile Tabs" className="profile-tabs"> {/* Added class */}
+        <UnderlineNav.Item
+          as="button" // Use button for accessibility
+          onClick={() => setActiveTab('overview')}
+          aria-current={activeTab === 'overview' ? 'page' : undefined}
+          icon={BookIcon}
+          className="profile-tab-item" // Added class
+        >
+          Overview
+        </UnderlineNav.Item>
+        <UnderlineNav.Item
+          as="button"
+          onClick={() => setActiveTab('starred')}
+          aria-current={activeTab === 'starred' ? 'page' : undefined}
+          icon={RepoIcon}
+          className="profile-tab-item" // Added class
+        >
+          Starred Repositories
+        </UnderlineNav.Item>
       </UnderlineNav>
 
       <div className="profile-page-wrapper">
+        {/* --- LEFT SIDEBAR (User Info) --- */}
         <div className="user-profile-section">
           <div className="profile-image">
             {userDetails.avatarUrl ? (
@@ -114,6 +201,8 @@ const Profile = () => {
           </div>
           <div className="name">
             <h3>{userDetails.username}</h3>
+            {/* Add real name if available */}
+            {/* <p>Your Real Name</p> */}
           </div>
           {!isOwnProfile && (
             <button
@@ -125,35 +214,49 @@ const Profile = () => {
             </button>
           )}
           <div className="follower">
-            <p>{userDetails.followerCount ?? 0} Followers</p>
-            {/* FIX: Removed the extra <p> tag with the dot */}
-            <p>{userDetails.followingCount ?? 0} Following</p>
+            {/* Use Link component if you want these to go somewhere */}
+            {/* Example: <Link to={`/users/${profileUserId}/followers`}><p><strong>{userDetails.followerCount ?? 0}</strong> Followers</p></Link> */}
+            <p><strong>{userDetails.followerCount ?? 0}</strong> Followers</p>
+            <p><strong>{userDetails.followingCount ?? 0}</strong> Following</p>
           </div>
         </div>
 
+        {/* --- MAIN CONTENT (Tabs) --- */}
         <div className="profile-main-content">
-          <div className="heat-map-section"><HeatMapProfile /></div>
-          <div className="profile-repos-section">
-            <h4>{isOwnProfile ? 'Your Repositories' : `${userDetails.username}'s Repositories`}</h4>
-            {userDetails.repositories && userDetails.repositories.length > 0 ? (
-              <ul className="profile-repo-list">
-                {userDetails.repositories.map(repo => (
-                  <li key={repo._id} className="profile-repo-item">
-                    <Link to={`/repo/${repo._id}`}>{repo.name}</Link>
-                    <p>{repo.description || 'No description'}</p>
-                    <span>{repo.visibility ? 'Public' : 'Private'}</span>
-                  </li>
-                ))}
-              </ul>
-            ) : (<p>No repositories found.</p>)}
-          </div>
+          {/* --- OVERVIEW TAB CONTENT --- */}
+          {activeTab === 'overview' && (
+            <>
+              <div className="heat-map-section"><HeatMapProfile /></div>
+              {renderRepoList(
+                userDetails.repositories,
+                isOwnProfile ? 'Your Repositories' : `${userDetails.username}'s Repositories`,
+                'No repositories found.'
+              )}
+            </>
+          )}
+
+          {/* --- STARRED REPOS TAB CONTENT --- */}
+          {activeTab === 'starred' && (
+            <>
+              {/* --- USE SMALL SPINNER for Starred Loading --- */}
+              {isStarredLoading && <Spinner size="small" />}
+
+              {error && !isStarredLoading && <p className="error-message">{`Error: ${error}`}</p>}
+              {!isStarredLoading && !error && starredRepos && renderRepoList(
+                starredRepos,
+                'Starred Repositories',
+                'No starred repositories found.'
+              )}
+            </>
+          )}
         </div>
       </div>
 
       {isOwnProfile && (
-        <button onClick={handleLogout} style={{ position: "fixed", bottom: "50px", right: "50px" }} id="logout">Logout</button>
+        <button onClick={handleLogout} id="logout">Logout</button>
       )}
-      {error && <div style={{ color: 'red', position: 'fixed', bottom: '100px', right: '50px', background: '#333', padding: '10px', borderRadius: '5px' }}>Error: {error}</div>}
+      {/* Show error banner for non-critical errors like failed starred fetch */}
+      {error && !isStarredLoading && activeTab === 'starred' && <div className="profile-error-banner">{`Error: ${error}`}</div>}
     </>
   );
 };

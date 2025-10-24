@@ -6,11 +6,8 @@ const bodyParser = require("body-parser");
 const http = require("http");
 const { Server } = require("socket.io");
 
-// FIX 1: Import the routers you actually have.
-// We will use repoRouter for all repository-related API calls.
-const repoRouter = require("./routes/repo.router");
-// Assuming you have a userRouter based on your file structure. If not, you can remove this.
-const userRouter = require("./routes/user.router");
+// FIX 1: Import the main router instead of individual routers
+const mainRouter = require("./routes/main.router");
 
 const yargs = require("yargs");
 const { hideBin } = require("yargs/helpers");
@@ -110,11 +107,9 @@ function startServer() {
     .then(() => console.log("✅ MongoDB connected!"))
     .catch((err) => console.error("❌ Unable to connect : ", err));
 
-  // FIX 2: Set up the API routes correctly.
-  // All repo-related requests will start with /api/repo
-  // All user-related requests will start with /api/user
-  app.use("/api/repo", repoRouter);
-  app.use("/api/user", userRouter);
+  // FIX 2: Use the main router for all API routes
+  // This will automatically handle /api/repo, /api/user, and /api/search
+  app.use("/api", mainRouter);
 
   const httpServer = http.createServer(app);
   const io = new Server(httpServer, {

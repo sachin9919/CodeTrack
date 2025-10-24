@@ -13,15 +13,36 @@ const Push = () => {
         setError(null);
         setMessage("");
 
+        // --- ADDED: Get token from localStorage ---
+        const token = localStorage.getItem('token');
+        if (!token) {
+            setError("Not authorized. Please log in again.");
+            setIsPushing(false);
+            return;
+        }
+        // --- END ADDED ---
+
         try {
-            // FIX: Use the correct API path, including the '/api' prefix
+            // --- ADDED: Authorization header ---
+            const headers = {
+                'Authorization': `Bearer ${token}`
+                // Add 'Content-Type': 'application/json' if your backend expects it,
+                // but for simple POSTs like this, it might not be needed.
+            };
+            // --- END ADDED ---
+
             const response = await fetch(`http://localhost:3000/api/repo/${repoId}/push`, {
                 method: "POST",
+                headers: headers // --- ADDED headers here ---
             });
 
             const result = await response.json();
 
             if (!response.ok) {
+                // Handle specific auth error from backend if available
+                if (response.status === 401 || response.status === 403) {
+                    throw new Error(result.error || "Authorization failed.");
+                }
                 throw new Error(result.error || "Push failed due to a server error.");
             }
 
