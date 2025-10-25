@@ -6,7 +6,7 @@ const bodyParser = require("body-parser");
 const http = require("http");
 const { Server } = require("socket.io");
 
-// FIX 1: Import the main router instead of individual routers
+// Import the main router
 const mainRouter = require("./routes/main.router");
 
 const yargs = require("yargs");
@@ -92,42 +92,51 @@ function startServer() {
   const app = express();
   const port = process.env.PORT || 3000;
 
-  // --- CORRECTION START: Dynamic CORS for Production/Render ---
-  const allowedOrigins = [
-    "http://localhost:5173",
-    "http://localhost:3000",
-    process.env.CORS_ORIGIN, // This is your Amplify domain on Render
-    "https://codetrack-backend-aws.onrender.com" // Allows direct testing of the API
-  ].filter(Boolean); // Filters out any undefined or empty strings
-
-  app.use(cors({
-    // CORRECTION: Use the dynamic list to allow the deployed frontend domain
-    origin: allowedOrigins,
-    credentials: true,
-    optionsSuccessStatus: 200 // Ensures preflight requests pass
-  }));
-  // --- CORRECTION END ---
-
+  // Middleware setup
   app.use(bodyParser.json());
   app.use(express.json());
 
-  const mongoURI = process.env.MONGODB_URI;
+  // ✅ --- FIXED CORS CONFIGURATION ---
+  const allowedOrigins = [
+    "http://localhost:5173",
+    "https://main.d2amjrt77shbml.amplifyapp.com",
+  ];
 
+  app.use(
+    cors({
+      origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          console.log("❌ CORS blocked for origin:", origin);
+          callback(new Error("Not allowed by CORS"));
+        }
+      },
+      credentials: true,
+      methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
+      allowedHeaders: ["Content-Type", "Authorization"],
+    })
+  );
+  // ✅ --- END CORS CONFIGURATION ---
+
+  // Connect to MongoDB
+  const mongoURI = process.env.MONGODB_URI;
   mongoose
     .connect(mongoURI)
     .then(() => console.log("✅ MongoDB connected!"))
-    .catch((err) => console.error("❌ Unable to connect : ", err));
+    .catch((err) => console.error("❌ Unable to connect:", err));
 
-  // FIX 2: Use the main router for all API routes
-  // This will automatically handle /api/repo, /api/user, and /api/search
+  // Use main router for all APIs
   app.use("/api", mainRouter);
 
+  // Setup HTTP + Socket.IO server
   const httpServer = http.createServer(app);
+
   const io = new Server(httpServer, {
     cors: {
-      // CORRECTION: Socket.IO also needs to allow the Amplify origin
       origin: allowedOrigins,
       methods: ["GET", "POST"],
+      credentials: true,
     },
   });
 
